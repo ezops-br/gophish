@@ -181,6 +181,23 @@ function setupOptions() {
                 });
             }
         });
+
+    // Load presets
+    api.presets.get()
+        .success(function (presets) {
+            var preset_s2 = $.map(presets, function (obj) {
+                obj.text = obj.name
+                return obj
+            });
+            $("#preset").select2({
+                placeholder: "Select a Preset",
+                data: preset_s2,
+            }).on('select2:select', function (e) {
+                var preset = e.params.data;
+                loadPreset(preset.id);
+            });
+        });
+
     api.templates.get()
         .success(function (templates) {
             if (templates.length == 0) {
@@ -289,6 +306,103 @@ function copy(idx) {
             $("#modal\\.flashes").empty().append("<div style=\"text-align:center\" class=\"alert alert-danger\">\
             <i class=\"fa fa-exclamation-circle\"></i> " + data.responseJSON.message + "</div>")
         })
+}
+
+function loadPreset(presetId) {
+    api.presets.get(presetId)
+        .success(function (preset) {
+            $("#name").val(preset.name);
+            $("#url").val(preset.url);
+            
+            if (preset.template.id) {
+                $("#template").val(preset.template.id.toString());
+                $("#template").trigger("change.select2");
+            }
+            
+            if (preset.page.id) {
+                $("#page").val(preset.page.id.toString());
+                $("#page").trigger("change.select2");
+            }
+            
+            if (preset.smtp.id) {
+                $("#profile").val(preset.smtp.id.toString());
+                $("#profile").trigger("change.select2");
+            }
+        })
+        .error(function (data) {
+            $("#modal\\.flashes").empty().append("<div style=\"text-align:center\" class=\"alert alert-danger\">\
+            <i class=\"fa fa-exclamation-circle\"></i> " + data.responseJSON.message + "</div>");
+        });
+}
+
+function savePreset() {
+    Swal.fire({
+        title: "Save as Preset",
+        input: "text",
+        inputLabel: "Preset Name",
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        confirmButtonColor: "#428bca",
+        reverseButtons: true,
+        allowOutsideClick: false,
+        showLoaderOnConfirm: true,
+        preConfirm: function (name) {
+            return new Promise(function (resolve, reject) {
+                if (!name) {
+                    reject("Please enter a preset name");
+                    return;
+                }
+                
+                var preset = {
+                    name: name,
+                    template: {
+                        name: $("#template").select2("data")[0].text
+                    },
+                    page: {
+                        name: $("#page").select2("data")[0].text
+                    },
+                    smtp: {
+                        name: $("#profile").select2("data")[0].text
+                    },
+                    url: $("#url").val()
+                };
+                
+                api.presets.post(preset)
+                    .success(function (data) {
+                        resolve();
+                        // Refresh presets dropdown
+                        api.presets.get()
+                            .success(function (presets) {
+                                var preset_s2 = $.map(presets, function (obj) {
+                                    obj.text = obj.name;
+                                    return obj;
+                                });
+                                $("#preset").empty().select2({
+                                    placeholder: "Select a Preset",
+                                    data: preset_s2
+                                });
+                            });
+                    })
+                    .error(function (data) {
+                        reject(data.responseJSON.message);
+                    });
+            });
+        }
+    }).then(function (result) {
+        if (result.value) {
+            Swal.fire({
+                title: "Success!",
+                text: "Preset saved successfully",
+                type: "success"
+            });
+        }
+    }).catch(function (error) {
+        Swal.fire({
+            title: "Error!",
+            text: error,
+            type: "error"
+        });
+    });
 }
 
 $(document).ready(function () {
