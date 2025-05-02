@@ -86,6 +86,14 @@ func (as *Server) registerRoutes() {
 	router.HandleFunc("/webhooks/", mid.Use(as.Webhooks, mid.RequirePermission(models.PermissionModifySystem)))
 	router.HandleFunc("/webhooks/{id:[0-9]+}/validate", mid.Use(as.ValidateWebhook, mid.RequirePermission(models.PermissionModifySystem)))
 	router.HandleFunc("/webhooks/{id:[0-9]+}", mid.Use(as.Webhook, mid.RequirePermission(models.PermissionModifySystem)))
+
+	// Campaign Presets
+	router.HandleFunc("/presets/", as.GetCampaignPresets).Methods("GET")
+	router.HandleFunc("/presets/", as.PostCampaignPreset).Methods("POST")
+	router.HandleFunc("/presets/{id:[0-9]+}/", as.GetCampaignPreset).Methods("GET")
+	router.HandleFunc("/presets/{id:[0-9]+}/", as.PutCampaignPreset).Methods("PUT")
+	router.HandleFunc("/presets/{id:[0-9]+}/", as.DeleteCampaignPreset).Methods("DELETE")
+
 	as.handler = router
 }
 
