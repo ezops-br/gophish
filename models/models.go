@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/pressly/goose/v3"
+	"bitbucket.org/liamstask/goose/lib/goose"
 
 	mysql "github.com/go-sql-driver/mysql"
 	"github.com/gophish/gophish/auth"
@@ -81,6 +81,23 @@ func generateSecureKey() string {
 	return fmt.Sprintf("%x", k)
 }
 
+func chooseDBDriver(name, openStr string) goose.DBDriver {
+	d := goose.DBDriver{Name: name, OpenStr: openStr}
+
+	switch name {
+	case "mysql":
+		d.Import = "github.com/go-sql-driver/mysql"
+		d.Dialect = &goose.MySqlDialect{}
+
+	// Default database is sqlite3
+	default:
+		d.Import = "github.com/mattn/go-sqlite3"
+		d.Dialect = &goose.Sqlite3Dialect{}
+	}
+
+	return d
+}
+
 func createTemporaryPassword(u *User) error {
 	var temporaryPassword string
 	if envPassword := os.Getenv(InitialAdminPassword); envPassword != "" {
@@ -116,26 +133,14 @@ func createTemporaryPassword(u *User) error {
 func Setup(c *config.Config) error {
 	// Setup the package-scoped config
 	conf = c
-
-	// Open our database connection
-	var err error
-	i := 0
-	for {
-		db, err = gorm.Open(conf.DBName, conf.DBPath)
-		if err == nil {
-			break
-		}
-		if err != nil && i >= MaxDatabaseConnectionAttempts {
-			log.Error(err)
-			return err
-		}
-		i += 1
-		log.Warn("waiting for database to be up...")
-		time.Sleep(5 * time.Second)
+	// Setup the goose configuration
+	migrateConf := &goose.DBConf{
+		MigrationsDir: conf.MigrationsPath,
+		Env:           "production",
+		Driver:        chooseDBDriver(conf.DBName, conf.DBPath),
 	}
-	db.LogMode(false)
-	db.SetLogger(log.Logger)
-	db.DB().SetMaxOpenConns(1)
+	// Get the latest possible migration
+	latest, err := goose.GetMostRecentDBVersion(migrateConf.MigrationsDir)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -164,17 +169,34 @@ func Setup(c *config.Config) error {
 		}
 	}
 
-	// Run migrations
-	if err := goose.SetDialect(conf.DBName); err != nil {
+	// Open our database connection
+	i := 0
+	for {
+		db, err = gorm.Open(conf.DBName, conf.DBPath)
+		if err == nil {
+			break
+		}
+		if err != nil && i >= MaxDatabaseConnectionAttempts {
+			log.Error(err)
+			return err
+		}
+		i += 1
+		log.Warn("waiting for database to be up...")
+		time.Sleep(5 * time.Second)
+	}
+	db.LogMode(false)
+	db.SetLogger(log.Logger)
+	db.DB().SetMaxOpenConns(1)
+	if err != nil {
 		log.Error(err)
 		return err
 	}
-
-	if err := goose.Up(db.DB(), conf.MigrationsPath); err != nil {
+	// Migrate up to the latest version
+	err = goose.RunMigrationsOnDb(migrateConf, migrateConf.MigrationsDir, latest, db.DB())
+	if err != nil {
 		log.Error(err)
 		return err
 	}
-
 	// Create the admin user if it doesn't exist
 	var userCount int64
 	var adminUser User
