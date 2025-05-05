@@ -2,6 +2,10 @@ name: Build Gophish Release
 on:
     release:
         types: [created]
+    push:
+        branches:
+            - development
+            - main
 
 jobs:
     build:
