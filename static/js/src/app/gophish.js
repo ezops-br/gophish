@@ -114,9 +114,9 @@ var api = {
         // get() - Queries the API for GET /presets
         get: function (id) {
             if (id) {
-                return query("/presets/" + id + "/", "GET", {}, false)
+                return query("/presets/" + id, "GET", {}, false)
             }
-            return query("/presets/", "GET", {}, false)
+            return query("/presets", "GET", {}, false)
         },
         // post() - Posts a preset to POST /presets
         post: function (preset) {
@@ -124,11 +124,11 @@ var api = {
         },
         // put() - Puts a preset to PUT /presets/:id
         put: function (preset) {
-            return query("/presets/" + preset.id + "/", "PUT", preset, false)
+            return query("/presets/" + preset.id, "PUT", preset, false)
         },
         // delete() - Deletes a preset at DELETE /presets/:id
         delete: function (id) {
-            return query("/presets/" + id + "/", "DELETE", {}, false)
+            return query("/presets/" + id, "DELETE", {}, false)
         }
     },
     // groups contains the endpoints for /groups

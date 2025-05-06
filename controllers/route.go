@@ -246,6 +246,13 @@ func (as *AdminServer) SendingProfiles(w http.ResponseWriter, r *http.Request) {
 	getTemplate(w, "sending_profiles").ExecuteTemplate(w, "base", params)
 }
 
+// Presets handles the default path and template execution
+func (as *AdminServer) Presets(w http.ResponseWriter, r *http.Request) {
+	params := newTemplateParams(r)
+	params.Title = "Presets"
+	getTemplate(w, "presets").ExecuteTemplate(w, "base", params)
+}
+
 // Settings handles the changing of settings
 func (as *AdminServer) Settings(w http.ResponseWriter, r *http.Request) {
 	switch {

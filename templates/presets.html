@@ -36,7 +36,7 @@
     </div>
 </div>
 <!-- Modal -->
-<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="presetModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -46,30 +46,35 @@
                 <h4 class="modal-title" id="presetModalLabel">New Preset</h4>
             </div>
             <div class="modal-body" id="modal_body">
+                
                 <div class="row" id="modal.flashes"></div>
                 <div class="form-group">
-                    <label for="name">Name:</label>
-                    <input type="text" class="form-control" id="name" placeholder="Preset name">
+                    <label class="control-label" for="name">Name:</label>
+                    <input type="text" class="form-control" id="name" placeholder="Preset name" autofocus>
+                    
                     <label class="control-label" for="template">Email Template:</label>
-                    <select class="form-control" placeholder="Template Name" id="template"/>
+                    <select class="form-control" placeholder="Template Name" id="template">
                         <option></option>
                     </select>
+                    
                     <label class="control-label" for="page">Landing Page:</label>
-                    <select class="form-control" placeholder="Landing Page" id="page"/>
+                    <select class="form-control" placeholder="Landing Page" id="page">
                         <option></option>
                     </select>
+                    
                     <label class="control-label" for="url">URL:
                         <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="right" title="Location of Gophish listener (must be reachable by targets!)"></i>
                     </label>
                     <input type="text" class="form-control" placeholder="http://192.168.1.1" id="url"/>
+                    
                     <label class="control-label" for="profile">Sending Profile:</label>
-                    <select class="form-control" placeholder="Sending Profile" id="profile"/>
+                    <select class="form-control" placeholder="Sending Profile" id="profile">
                         <option></option>
                     </select>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="dismiss()">Close</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="dismiss()">Cancel</button>
                 <button type="button" id="saveButton" class="btn btn-primary" onclick="save()">
                     <i class="fa fa-save"></i> Save Preset</button>
             </div>
