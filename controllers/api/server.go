@@ -89,7 +89,7 @@ func (as *Server) registerRoutes() {
 
 	// Campaign Presets
 	router.HandleFunc("/presets/", as.GetCampaignPresets).Methods("GET")
-	router.HandleFunc("/presets/", as.PostCampaignPreset).Methods("POST")
+	router.HandleFunc("/presets", as.PostCampaignPreset).Methods("POST")
 	router.HandleFunc("/presets/{id:[0-9]+}", as.GetCampaignPreset).Methods("GET")
 	router.HandleFunc("/presets/{id:[0-9]+}", as.PutCampaignPreset).Methods("PUT")
 	router.HandleFunc("/presets/{id:[0-9]+}", as.DeleteCampaignPreset).Methods("DELETE")
