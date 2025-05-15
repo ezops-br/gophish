@@ -11,9 +11,9 @@ import (
 )
 
 func (as *Server) GetCampaignPresets(w http.ResponseWriter, r *http.Request) {
-	u := ctx.Get(r, "user").(models.User)
+	userId := ctx.Get(r, "user_id").(int64)
 
-	presets, err := models.GetCampaignPresets(u.Id)
+	presets, err := models.GetCampaignPresets(userId)
 	if err != nil {
 		http.Error(w, "Error getting presets", http.StatusInternalServerError)
 		return
@@ -23,11 +23,11 @@ func (as *Server) GetCampaignPresets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (as *Server) GetCampaignPreset(w http.ResponseWriter, r *http.Request) {
-	u := ctx.Get(r, "user").(models.User)
+	userId := ctx.Get(r, "user_id").(int64)
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	preset, err := models.GetCampaignPreset(id, u.Id)
+	preset, err := models.GetCampaignPreset(id, userId)
 	if err != nil {
 		http.Error(w, "Error getting preset", http.StatusInternalServerError)
 		return
@@ -37,7 +37,7 @@ func (as *Server) GetCampaignPreset(w http.ResponseWriter, r *http.Request) {
 }
 
 func (as *Server) PostCampaignPreset(w http.ResponseWriter, r *http.Request) {
-	u := ctx.Get(r, "user").(models.User)
+	userId := ctx.Get(r, "user_id").(int64)
 
 	preset := &models.CampaignPreset{}
 	err := json.NewDecoder(r.Body).Decode(preset)
@@ -46,31 +46,34 @@ func (as *Server) PostCampaignPreset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	preset.UserId = u.Id
+	preset.UserId = userId
 
 	// Get template ID
-	template, err := models.GetTemplateByName(preset.Template.Name, u.Id)
+	template, err := models.GetTemplateByName(preset.Template.Name, userId)
 	if err != nil {
 		http.Error(w, "Template not found", http.StatusBadRequest)
 		return
 	}
 	preset.TemplateId = template.Id
+	preset.Template = models.Template{}
 
 	// Get page ID
-	page, err := models.GetPageByName(preset.Page.Name, u.Id)
+	page, err := models.GetPageByName(preset.Page.Name, userId)
 	if err != nil {
 		http.Error(w, "Page not found", http.StatusBadRequest)
 		return
 	}
 	preset.PageId = page.Id
+	preset.Page = models.Page{}
 
 	// Get SMTP ID
-	smtp, err := models.GetSMTPByName(preset.SMTP.Name, u.Id)
+	smtp, err := models.GetSMTPByName(preset.SMTP.Name, userId)
 	if err != nil {
 		http.Error(w, "SMTP profile not found", http.StatusBadRequest)
 		return
 	}
 	preset.SMTPId = smtp.Id
+	preset.SMTP = models.SMTP{}
 
 	err = models.PostCampaignPreset(preset)
 	if err != nil {
@@ -82,11 +85,11 @@ func (as *Server) PostCampaignPreset(w http.ResponseWriter, r *http.Request) {
 }
 
 func (as *Server) PutCampaignPreset(w http.ResponseWriter, r *http.Request) {
-	u := ctx.Get(r, "user").(models.User)
+	userId := ctx.Get(r, "user_id").(int64)
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	preset, err := models.GetCampaignPreset(id, u.Id)
+	preset, err := models.GetCampaignPreset(id, userId)
 	if err != nil {
 		http.Error(w, "Preset not found", http.StatusNotFound)
 		return
@@ -99,7 +102,7 @@ func (as *Server) PutCampaignPreset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get template ID
-	template, err := models.GetTemplateByName(preset.Template.Name, u.Id)
+	template, err := models.GetTemplateByName(preset.Template.Name, userId)
 	if err != nil {
 		http.Error(w, "Template not found", http.StatusBadRequest)
 		return
@@ -107,7 +110,7 @@ func (as *Server) PutCampaignPreset(w http.ResponseWriter, r *http.Request) {
 	preset.TemplateId = template.Id
 
 	// Get page ID
-	page, err := models.GetPageByName(preset.Page.Name, u.Id)
+	page, err := models.GetPageByName(preset.Page.Name, userId)
 	if err != nil {
 		http.Error(w, "Page not found", http.StatusBadRequest)
 		return
@@ -115,7 +118,7 @@ func (as *Server) PutCampaignPreset(w http.ResponseWriter, r *http.Request) {
 	preset.PageId = page.Id
 
 	// Get SMTP ID
-	smtp, err := models.GetSMTPByName(preset.SMTP.Name, u.Id)
+	smtp, err := models.GetSMTPByName(preset.SMTP.Name, userId)
 	if err != nil {
 		http.Error(w, "SMTP profile not found", http.StatusBadRequest)
 		return
@@ -133,11 +136,11 @@ func (as *Server) PutCampaignPreset(w http.ResponseWriter, r *http.Request) {
 
 // DeleteCampaignPreset deletes a preset
 func (as *Server) DeleteCampaignPreset(w http.ResponseWriter, r *http.Request) {
-	u := ctx.Get(r, "user").(models.User)
+	userId := ctx.Get(r, "user_id").(int64)
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	_, err := models.GetCampaignPreset(id, u.Id)
+	_, err := models.GetCampaignPreset(id, userId)
 	if err != nil {
 		http.Error(w, "Preset not found", http.StatusNotFound)
 		return
@@ -150,4 +153,4 @@ func (as *Server) DeleteCampaignPreset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	JSONResponse(w, nil, http.StatusOK)
-} 
+}

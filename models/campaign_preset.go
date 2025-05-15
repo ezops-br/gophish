@@ -13,11 +13,11 @@ type CampaignPreset struct {
 	Name        string    `json:"name" sql:"not null"`
 	CreatedDate time.Time `json:"created_date"`
 	TemplateId  int64     `json:"-"`
-	Template    Template  `json:"template"`
+	Template    Template  `json:"template" gorm:"-:all"`
 	PageId      int64     `json:"-"`
-	Page        Page      `json:"page"`
+	Page        Page      `json:"page" gorm:"-:all"`
 	SMTPId      int64     `json:"-"`
-	SMTP        SMTP      `json:"smtp"`
+	SMTP        SMTP      `json:"smtp" gorm:"-:all"`
 	URL         string    `json:"url"`
 }
 
@@ -89,4 +89,4 @@ func (p *CampaignPreset) getDetails() error {
 		p.SMTP = SMTP{Name: "[Deleted]"}
 	}
 	return nil
-} 
+}
