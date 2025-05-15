@@ -174,7 +174,6 @@ function setupOptions() {
                     obj.title = obj.num_targets + " targets"
                     return obj
                 });
-                console.log(group_s2)
                 $("#users.form-control").select2({
                     placeholder: "Select Groups",
                     data: group_s2,
@@ -213,10 +212,6 @@ function setupOptions() {
                     placeholder: "Select a Template",
                     data: template_s2,
                 });
-                if (templates.length === 1) {
-                    template_select.val(template_s2[0].id)
-                    template_select.trigger('change.select2')
-                }
             }
         });
     api.pages.get()
@@ -234,10 +229,6 @@ function setupOptions() {
                     placeholder: "Select a Landing Page",
                     data: page_s2,
                 });
-                if (pages.length === 1) {
-                    page_select.val(page_s2[0].id)
-                    page_select.trigger('change.select2')
-                }
             }
         });
     api.SMTP.get()
@@ -255,10 +246,6 @@ function setupOptions() {
                     placeholder: "Select a Sending Profile",
                     data: profile_s2,
                 }).select2("val", profile_s2[0]);
-                if (profiles.length === 1) {
-                    profile_select.val(profile_s2[0].id)
-                    profile_select.trigger('change.select2')
-                }
             }
         });
 }
@@ -313,7 +300,7 @@ function loadPreset(presetId) {
         .success(function (preset) {
             $("#name").val(preset.name);
             $("#url").val(preset.url);
-            
+
             if (preset.template.id) {
                 $("#template").val(preset.template.id.toString());
                 $("#template").trigger("change.select2");
