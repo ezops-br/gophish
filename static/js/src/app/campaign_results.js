@@ -199,6 +199,73 @@ function completeCampaign() {
     })
 }
 
+function generateReport() {
+    const lang = $("#lang").val()
+
+    const fileInput = document.getElementById("template_file");
+    const formData = new FormData();
+
+    formData.append("lang", lang);
+
+    if (fileInput.files.length > 0) {
+        formData.append("template_file", fileInput.files[0]);
+    }
+
+    Swal.fire({
+        title: "Generate Campaign Report?",
+        text: "A report for the current state of this campaign will be generated and downloaded.",
+        type: "question",
+        animation: false,
+        showCancelButton: true,
+        confirmButtonText: "Generate Report",
+        confirmButtonColor: "#428bca",
+        reverseButtons: true,
+        allowOutsideClick: false,
+        showLoaderOnConfirm: true,
+        preConfirm: function () {
+            return new Promise(function (resolve, reject) {
+                const url = "/api/campaigns/" + campaign.id + "/report";
+
+                fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": "Bearer ffd2a1bff46357c60e68aee4ab12678ade5fca823cfc97d13fd557385cb3fd0f"
+                    },
+                    body: formData,
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        return response.text().then(function(text) {
+                            reject(text || "Failed to generate report.");
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(function(blob) {
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = `campaign_${campaign.id}_report_${lang}.docx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    resolve();
+                })
+                .catch(function(error) {
+                    reject(error.toString());
+                });
+            });
+        }
+    }).then(function (result) {
+        if (result.value){
+            Swal.fire(
+                'Report Downloaded!',
+                'The campaign report has been downloaded.',
+                'success'
+            );
+        }
+    });
+}
+
 // Exports campaign results as a CSV file
 function exportAsCSV(scope) {
     exportHTML = $("#exportButton").html()

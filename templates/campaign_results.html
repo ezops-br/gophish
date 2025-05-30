@@ -35,6 +35,9 @@
             <button id="refresh_btn" type="button" class="btn btn-blue" data-toggle="tooltip" onclick="refresh()">
                 <i class="fa fa-refresh fa-lg"></i> Refresh
             </button>
+            <button id="generate_report" type="button" class="btn btn-blue" data-toggle="modal" data-backdrop="static" data-target="#modal">
+                <i class="fa fa-file-word-o"></i>Export Report DOCX
+            </button>
             <span id="refresh_message">
                 <i class="fa fa-spin fa-spinner"></i> Refreshing
             </span>
@@ -85,6 +88,39 @@
         </div>
     </div>
     <div id="flashes" class="row"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismiss()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="generateReportModalLabel">Generate Campaign Report</h4>
+            </div>
+            <div class="modal-body" id="modal_body">
+                <div class="row" id="modal.flashes"></div>
+                <div class="form-group">
+                    <label class="control-label" for="lang">Language</label>
+                    <select class="form-control" placeholder="Select the report language" id="lang" autofocus>
+                        <option value="en">English</option>
+                        <option value="fr">French</option>
+                    </select>
+
+                    <label for="template_file">Template File:</label>
+                    <input type="file" class="form-control" id="template_file" placeholder="Template File" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="dismiss()">Close</button>
+                <button type="button" id="generateButton" class="btn btn-primary" onclick="generateReport()">
+                    <i class="fa fa-file-word-o"></i> Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 {{end}} {{define "scripts"}}
 <script src="/js/dist/app/campaign_results.min.js"></script>
