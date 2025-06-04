@@ -70,8 +70,6 @@ func ensureGoreportConfig(basePath, host, apiKey string) error {
 		host = "http://" + host
 	}
 
-	fmt.Printf("\n\n host at %s \n\n", host)
-
 	configDir := filepath.Join(basePath, "Goreport")
 	configPath := filepath.Join(configDir, "Gophish.config")
 
