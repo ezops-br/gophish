@@ -85,16 +85,25 @@
             <div class="modal-body" id="modal_body">
                 <div class="row" id="modal.flashes"></div>
                 <div class="form-group">
+                    
+                    <label class="control-label" for="preset">Load Preset:</label>
+                    <select class="form-control" placeholder="Select a Preset" id="preset" autofocus>
+                        <option></option>
+                    </select>
+
                     <label for="name">Name:</label>
-                    <input type="text" class="form-control" id="name" placeholder="Campaign name" autofocus>
+                    <input type="text" class="form-control" id="name" placeholder="Campaign name" />
+                    
                     <label class="control-label" for="template">Email Template:</label>
-                    <select class="form-control" placeholder="Template Name" id="template" />
-                    <option></option>
+                    <select class="form-control" placeholder="Template Name" id="template">
+                        <option></option>
                     </select>
+
                     <label class="control-label" for="page">Landing Page:</label>
-                    <select class="form-control" placeholder="Landing Page" id="page" />
-                    <option></option>
+                    <select class="form-control" placeholder="Landing Page" id="page">
+                        <option></option>
                     </select>
+
                     <label class="control-label" for="url">URL:
                         <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="right" title="Location of Gophish listener (must be reachable by targets!)"></i>
                     </label>
@@ -111,10 +120,11 @@
                             <input type="text" class="form-control" id="send_by_date" autocomplete="random-data"/> <!--Chrome ignores autocomplete="off".-->
                         </div>
                     </div>
+
                     <label class="control-label" for="profile">Sending Profile:</label>
                     <div class="input-group">
-                        <select class="form-control" placeholder="Sending Profile" id="profile" />
-                        <option></option>
+                        <select class="form-control" placeholder="Sending Profile" id="profile">
+                            <option></option>
                         </select>
                         <span class="input-group-btn">
                             <button type="button" data-toggle="modal" data-backdrop="static" data-target="#sendTestEmailModal"
@@ -122,6 +132,7 @@
                                 <i class="fa fa-envelope"></i> Send Test Email</button>
                         </span>
                     </div>
+
                     <label class="control-label" for="users">Groups:</label>
                     <select class="form-control" id="users" multiple="multiple"></select>
                 </div>

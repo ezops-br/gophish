@@ -2,7 +2,12 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
 	"time"
 
 	log "github.com/gophish/gophish/logger"
@@ -667,4 +672,68 @@ func CompleteCampaign(id int64, uid int64) error {
 		log.Error(err)
 	}
 	return err
+}
+
+// CampaignReport runs the Goreport Python script and returns the generated DOCX file.
+func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]byte, error) {
+	exePath, err := os.Executable()
+
+	if err != nil {
+		log.Errorf("Error getting executable path: %v", err)
+		return nil, fmt.Errorf("failed to get executable path: %v", err)
+	}
+
+	basePath := filepath.Dir(exePath)
+
+	goReportScriptPath := filepath.Join(basePath, "Goreport", "GoReport.py")
+	goReportConfigPath := filepath.Join(basePath, "Goreport", "Gophish.config")
+
+	if _, err := os.Stat(goReportScriptPath); os.IsNotExist(err) {
+		log.Errorf("GoReport script not found at: %s", goReportScriptPath)
+		return nil, fmt.Errorf("GoReport script not found at: %s. Ensure the Goreport directory is correctly placed relative to the Gophish executable", goReportScriptPath)
+	}
+
+	if _, err := os.Stat(goReportConfigPath); os.IsNotExist(err) {
+		log.Errorf("GoReport config not found at: %s", goReportConfigPath)
+		return nil, fmt.Errorf("GoReport config not found at: %s. Ensure the Goreport directory is correctly placed relative to the Gophish executable", goReportConfigPath)
+	}
+
+	if _, err := os.Stat(templateFile); os.IsNotExist(err) {
+		log.Errorf("Template file not found at: %s", templateFile)
+		return nil, fmt.Errorf("template file not found at: %s", templateFile)
+	}
+
+	campaignID := strconv.FormatInt(id, 10)
+	tempReportDir := os.TempDir()
+	outputPath := filepath.Join(tempReportDir, "campaign_report_"+campaignID+".docx")
+
+	log.Infof("Generating report for campaign %s", campaignID)
+	log.Infof("Using script: %s", goReportScriptPath)
+	log.Infof("Using config: %s", goReportConfigPath)
+	log.Infof("Using template: %s", templateFile)
+	log.Infof("Python script will output to: %s", outputPath)
+
+	cmd := exec.Command(
+		"py",
+		goReportScriptPath,
+		"--id", campaignID,
+		"--template", templateFile,
+		"--format", "word",
+		"--filename", outputPath,
+		"--lang", lang,
+		"--config", goReportConfigPath,
+	)
+
+	_, err = cmd.CombinedOutput()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate report: %v", err)
+	}
+
+	reportBytes, err := os.ReadFile(outputPath + ".docx")
+	if err != nil {
+		return nil, fmt.Errorf("failed to read generated report: %v", err)
+	}
+
+	return reportBytes, nil
 }

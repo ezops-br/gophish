@@ -742,3 +742,8 @@ table.dataTable {
 #password-strength-container {
     height: 40px;
 }
+
+/* Select2 Styles */
+.select2-container {
+    width: 100% !important;
+}

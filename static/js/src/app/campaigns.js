@@ -174,13 +174,29 @@ function setupOptions() {
                     obj.title = obj.num_targets + " targets"
                     return obj
                 });
-                console.log(group_s2)
                 $("#users.form-control").select2({
                     placeholder: "Select Groups",
                     data: group_s2,
                 });
             }
         });
+
+    // Load presets
+    api.presets.get()
+        .success(function (presets) {
+            var preset_s2 = $.map(presets, function (obj) {
+                obj.text = obj.name
+                return obj
+            });
+            $("#preset").select2({
+                placeholder: "Select a Preset",
+                data: preset_s2,
+            }).on('select2:select', function (e) {
+                var preset = e.params.data;
+                loadPreset(preset.id);
+            });
+        });
+
     api.templates.get()
         .success(function (templates) {
             if (templates.length == 0) {
@@ -196,10 +212,6 @@ function setupOptions() {
                     placeholder: "Select a Template",
                     data: template_s2,
                 });
-                if (templates.length === 1) {
-                    template_select.val(template_s2[0].id)
-                    template_select.trigger('change.select2')
-                }
             }
         });
     api.pages.get()
@@ -217,10 +229,6 @@ function setupOptions() {
                     placeholder: "Select a Landing Page",
                     data: page_s2,
                 });
-                if (pages.length === 1) {
-                    page_select.val(page_s2[0].id)
-                    page_select.trigger('change.select2')
-                }
             }
         });
     api.SMTP.get()
@@ -238,10 +246,6 @@ function setupOptions() {
                     placeholder: "Select a Sending Profile",
                     data: profile_s2,
                 }).select2("val", profile_s2[0]);
-                if (profiles.length === 1) {
-                    profile_select.val(profile_s2[0].id)
-                    profile_select.trigger('change.select2')
-                }
             }
         });
 }
@@ -290,6 +294,34 @@ function copy(idx) {
             <i class=\"fa fa-exclamation-circle\"></i> " + data.responseJSON.message + "</div>")
         })
 }
+
+function loadPreset(presetId) {
+    api.presets.get(presetId)
+        .success(function (preset) {
+            $("#name").val(preset.name);
+            $("#url").val(preset.url);
+
+            if (preset.template.id) {
+                $("#template").val(preset.template.id.toString());
+                $("#template").trigger("change.select2");
+            }
+            
+            if (preset.page.id) {
+                $("#page").val(preset.page.id.toString());
+                $("#page").trigger("change.select2");
+            }
+            
+            if (preset.smtp.id) {
+                $("#profile").val(preset.smtp.id.toString());
+                $("#profile").trigger("change.select2");
+            }
+        })
+        .error(function (data) {
+            $("#modal\\.flashes").empty().append("<div style=\"text-align:center\" class=\"alert alert-danger\">\
+            <i class=\"fa fa-exclamation-circle\"></i> " + data.responseJSON.message + "</div>");
+        });
+}
+
 
 $(document).ready(function () {
     $("#launch_date").datetimepicker({

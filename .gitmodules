@@ -1,0 +1,3 @@
+[submodule "Goreport"]
+	path = Goreport
+	url = https://github.com/ezops-br/Goreport.git

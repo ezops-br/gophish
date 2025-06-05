@@ -109,6 +109,28 @@ var api = {
             return query("/campaigns/" + id + "/summary", "GET", {}, true)
         }
     },
+    // presets contains the endpoints for /presets
+    presets: {
+        // get() - Queries the API for GET /presets
+        get: function (id) {
+            if (id) {
+                return query("/presets/" + id, "GET", {}, false)
+            }
+            return query("/presets", "GET", {}, false)
+        },
+        // post() - Posts a preset to POST /presets
+        post: function (preset) {
+            return query("/presets/", "POST", preset, false)
+        },
+        // put() - Puts a preset to PUT /presets/:id
+        put: function (preset) {
+            return query("/presets/" + preset.id, "PUT", preset, false)
+        },
+        // delete() - Deletes a preset at DELETE /presets/:id
+        delete: function (id) {
+            return query("/presets/" + id, "DELETE", {}, false)
+        }
+    },
     // groups contains the endpoints for /groups
     groups: {
         // get() - Queries the API for GET /groups

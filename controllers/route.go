@@ -4,9 +4,12 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/tls"
+	"fmt"
 	"html/template"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -60,6 +63,22 @@ var defaultTLSConfig = &tls.Config{
 		tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
 		tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
 	},
+}
+
+func ensureGoreportConfig(basePath, host, apiKey string) error {
+	if !strings.HasPrefix(host, "http://") && !strings.HasPrefix(host, "https://") {
+		host = "http://" + host
+	}
+
+	configDir := filepath.Join(basePath, "Goreport")
+	configPath := filepath.Join(configDir, "Gophish.config")
+
+	configContent := fmt.Sprintf(`[Gophish]
+gp_host: %s
+api_key: %s
+`, host, apiKey)
+
+	return os.WriteFile(configPath, []byte(configContent), 0644)
 }
 
 // WithWorker is an option that sets the background worker.
@@ -133,6 +152,7 @@ func (as *AdminServer) registerRoutes() {
 	router.HandleFunc("/groups", mid.Use(as.Groups, mid.RequireLogin))
 	router.HandleFunc("/landing_pages", mid.Use(as.LandingPages, mid.RequireLogin))
 	router.HandleFunc("/sending_profiles", mid.Use(as.SendingProfiles, mid.RequireLogin))
+	router.HandleFunc("/presets", mid.Use(as.Presets, mid.RequireLogin))
 	router.HandleFunc("/settings", mid.Use(as.Settings, mid.RequireLogin))
 	router.HandleFunc("/users", mid.Use(as.UserManagement, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/webhooks", mid.Use(as.Webhooks, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
@@ -243,6 +263,13 @@ func (as *AdminServer) SendingProfiles(w http.ResponseWriter, r *http.Request) {
 	params := newTemplateParams(r)
 	params.Title = "Sending Profiles"
 	getTemplate(w, "sending_profiles").ExecuteTemplate(w, "base", params)
+}
+
+// Presets handles the default path and template execution
+func (as *AdminServer) Presets(w http.ResponseWriter, r *http.Request) {
+	params := newTemplateParams(r)
+	params.Title = "Presets"
+	getTemplate(w, "presets").ExecuteTemplate(w, "base", params)
 }
 
 // Settings handles the changing of settings
@@ -400,6 +427,16 @@ func (as *AdminServer) Login(w http.ResponseWriter, r *http.Request) {
 		// If we've logged in, save the session and redirect to the dashboard
 		session.Values["id"] = u.Id
 		session.Save(r, w)
+
+		exePath, _ := os.Executable()
+		basePath := filepath.Dir(exePath)
+		host := as.config.ListenURL
+		apiKey := u.ApiKey
+
+		if err := ensureGoreportConfig(basePath, host, apiKey); err != nil {
+			log.Errorf("Failed to write Goreport config: %v", err)
+		}
+
 		as.nextOrIndex(w, r)
 	}
 }

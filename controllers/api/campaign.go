@@ -2,8 +2,13 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	ctx "github.com/gophish/gophish/context"
 	log "github.com/gophish/gophish/logger"
@@ -134,4 +139,122 @@ func (as *Server) CampaignComplete(w http.ResponseWriter, r *http.Request) {
 		}
 		JSONResponse(w, models.Response{Success: true, Message: "Campaign completed successfully!"}, http.StatusOK)
 	}
+}
+
+// CampaignReport generates and returns the campaign report document.
+func (as *Server) CampaignReport(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	uid := ctx.Get(r, "user_id").(int64)
+
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Failed to parse form data: " + err.Error(),
+		})
+		return
+	}
+
+	lang := r.FormValue("lang")
+	if lang == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Missing required field: lang",
+		})
+		return
+	}
+
+	file, _, err := r.FormFile("template_file")
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Failed to read template file: " + err.Error(),
+		})
+		return
+	}
+	defer file.Close()
+
+	exePath, err := os.Executable()
+	if err != nil {
+		log.Errorf("Error getting executable path: %v", err)
+		http.Error(w, "Failed to determine application path (executable error)", http.StatusInternalServerError)
+
+		return
+	}
+	basePath := filepath.Dir(exePath)
+
+	defaultTemplateFile := filepath.Join(basePath, "Goreport", "template.docx")
+	currentTemplateFile := defaultTemplateFile
+
+	if r.Method == "POST" && strings.Contains(r.Header.Get("Content-Type"), "multipart/form-data") {
+		if err := r.ParseMultipartForm(32 << 20); err != nil {
+			log.Errorf("Error parsing multipart form: %v", err)
+			http.Error(w, fmt.Sprintf("Failed to parse multipart form: %v", err), http.StatusBadRequest)
+
+			return
+		}
+
+		lang := r.FormValue("lang")
+
+		file, handler, err := r.FormFile("template_file")
+
+		if err != nil && err != http.ErrMissingFile {
+			log.Errorf("Error retrieving 'template_file': %v", err)
+			http.Error(w, fmt.Sprintf("Error processing template file: %v", err), http.StatusInternalServerError)
+
+			return
+		}
+
+		if handler != nil && err == nil {
+			defer file.Close()
+			tempDir := os.TempDir()
+			tempPath := filepath.Join(tempDir, handler.Filename)
+			out, errCreate := os.Create(tempPath)
+
+			if errCreate != nil {
+				log.Errorf("Error creating temporary file for upload [%s]: %v", tempPath, errCreate)
+				http.Error(w, "Failed to save uploaded template (create)", http.StatusInternalServerError)
+
+				return
+			}
+
+			_, errCopy := io.Copy(out, file)
+			out.Close()
+
+			if errCopy != nil {
+				log.Errorf("Error copying uploaded file to temporary location [%s]: %v", tempPath, errCopy)
+				http.Error(w, "Failed to save uploaded template (copy)", http.StatusInternalServerError)
+
+				return
+			}
+
+			currentTemplateFile = tempPath
+
+			fmt.Printf("Using uploaded templateFile: [%s]\n", currentTemplateFile)
+		} else {
+			fmt.Printf("No 'template_file' uploaded or error retrieving it (err: %v), using default: [%s]\n", err, currentTemplateFile)
+		}
+
+		report, modelErr := models.CampaignReport(id, uid, lang, currentTemplateFile)
+
+		if modelErr != nil {
+			log.Errorf("Error from models.CampaignReport: %v", modelErr)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "Failed to generate report: " + modelErr.Error(),
+			})
+			return
+		}
+
+		w.Header().Set("Content-Disposition", "attachment; filename=campaign_report.docx")
+		w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+		w.Write(report)
+	}
+
+	http.Error(w, "Invalid request method or Content-Type for report generation.", http.StatusMethodNotAllowed)
 }

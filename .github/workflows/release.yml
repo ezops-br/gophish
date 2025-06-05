@@ -2,6 +2,10 @@ name: Build Gophish Release
 on:
     release:
         types: [created]
+    push:
+        branches:
+            - development
+            - main
 
 jobs:
     build:
@@ -80,6 +84,7 @@ jobs:
                     cp $BINARY .;
                     zip -r releases/$(basename $RELEASE_DIR).zip \
                       $(basename ${BINARY}) \
+                      Goreport \
                       static/js/dist \
                       static/js/src/vendor/ckeditor \
                       static/css/dist \
@@ -119,6 +124,11 @@ jobs:
                 AUTH_HEADER: "Authorization: token ${{ secrets.GITHUB_TOKEN }}"
               run: |
                 UPLOAD_URL=$(echo -n $UPLOAD_URL | sed s/\{.*//g)
+                echo "UPLOAD_URL: $UPLOAD_URL"
+                if [ -z "$UPLOAD_URL" ]; then
+                  echo "UPLOAD_URL is not set. Skipping upload."
+                  exit 0
+                fi
                 for FILE in releases/*
                 do
                   echo "Uploading ${FILE}";
