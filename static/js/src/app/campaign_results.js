@@ -229,14 +229,18 @@ function generateReport() {
                 fetch(url, {
                     method: "POST",
                     headers: {
-                        "Authorization": "Bearer ffd2a1bff46357c60e68aee4ab12678ade5fca823cfc97d13fd557385cb3fd0f"
+                        "Authorization": "Bearer " + user.api_key,
                     },
                     body: formData,
                 })
                 .then(function(response) {
                     if (!response.ok) {
-                        return response.text().then(function(text) {
-                            reject(text || "Failed to generate report.");
+                        return response.json().then(function(json) {
+                            throw new Error(json.error || "Failed to generate report.");
+                        }).catch(function() {
+                            return response.text().then(function(text) {
+                                throw new Error(text || "Failed to generate report.");
+                            });
                         });
                     }
                     return response.blob();
@@ -251,6 +255,7 @@ function generateReport() {
                     resolve();
                 })
                 .catch(function(error) {
+                    Swal.fire("Error", error.message || error, "error");
                     reject(error.toString());
                 });
             });

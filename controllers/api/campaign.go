@@ -147,6 +147,37 @@ func (as *Server) CampaignReport(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
 	uid := ctx.Get(r, "user_id").(int64)
 
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Failed to parse form data: " + err.Error(),
+		})
+		return
+	}
+
+	lang := r.FormValue("lang")
+	if lang == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Missing required field: lang",
+		})
+		return
+	}
+
+	file, _, err := r.FormFile("template_file")
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Failed to read template file: " + err.Error(),
+		})
+		return
+	}
+	defer file.Close()
+
 	exePath, err := os.Executable()
 	if err != nil {
 		log.Errorf("Error getting executable path: %v", err)
@@ -212,15 +243,17 @@ func (as *Server) CampaignReport(w http.ResponseWriter, r *http.Request) {
 
 		if modelErr != nil {
 			log.Errorf("Error from models.CampaignReport: %v", modelErr)
-			http.Error(w, fmt.Sprintf("Failed to generate report: %v", modelErr), http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "Failed to generate report: " + modelErr.Error(),
+			})
 			return
 		}
 
 		w.Header().Set("Content-Disposition", "attachment; filename=campaign_report.docx")
 		w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 		w.Write(report)
-
-		return
 	}
 
 	http.Error(w, "Invalid request method or Content-Type for report generation.", http.StatusMethodNotAllowed)
