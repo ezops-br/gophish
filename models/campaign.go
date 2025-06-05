@@ -713,6 +713,11 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 	log.Infof("Using template: %s", templateFile)
 	log.Infof("Python script will output to: %s", outputPath)
 
+	if lang == "" {
+		lang = "en"
+		log.Infof("No language specified, defaulting to English")
+	}
+
 	cmd := exec.Command(
 		"py",
 		goReportScriptPath,
