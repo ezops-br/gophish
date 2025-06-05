@@ -255,7 +255,13 @@ function generateReport() {
                     resolve();
                 })
                 .catch(function(error) {
-                    Swal.fire("Error", error.message || error, "error");
+                    Swal.fire({
+                        title: "Error",
+                        text: "An error occurred while generating the report, please try again later.",
+                        icon: "error"
+                    }).then(function() {
+                        $("#modal").modal('hide');
+                    });
                     reject(error.toString());
                 });
             });
@@ -266,7 +272,9 @@ function generateReport() {
                 'Report Downloaded!',
                 'The campaign report has been downloaded.',
                 'success'
-            );
+            ).then(function() {
+                $("#modal").modal('hide');
+            });
         }
     });
 }
