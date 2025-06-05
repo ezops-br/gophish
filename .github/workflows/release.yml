@@ -52,6 +52,8 @@ jobs:
             - if: matrix.os == 'windows-latest'
               run: echo "RELEASE=gophish-${{ github.event.release.tag_name }}-${{ matrix.releaseos }}-64bit" | Out-File -FilePath $env:GITHUB_ENV -Append # https://github.com/actions/runner/issues/1636
             - uses: actions/checkout@v4
+              with:
+                submodules: recursive
             - name: Build ${{ matrix.goos }}/${{ matrix.arch }}
               run: go build -o ${{ matrix.bin }}
               env:
@@ -70,6 +72,8 @@ jobs:
         needs: build
         steps:
             - uses: actions/checkout@v4
+              with:
+                submodules: recursive
             - uses: actions/download-artifact@v4
               with:
                 path: bin
