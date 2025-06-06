@@ -3,64 +3,83 @@
 Gophish
 =======
 
-![Build Status](https://github.com/gophish/gophish/workflows/CI/badge.svg) [![GoDoc](https://godoc.org/github.com/gophish/gophish?status.svg)](https://godoc.org/github.com/gophish/gophish)
+![Build Status](https://github.com/ezops-br/gophish/workflows/CI/badge.svg) [![GoDoc](https://godoc.org/github.com/ezops-br/gophish?status.svg)](https://godoc.org/github.com/ezops-br/gophish)
 
 Gophish: Open-Source Phishing Toolkit
 
 [Gophish](https://getgophish.com) is an open-source phishing toolkit designed for businesses and penetration testers. It provides the ability to quickly and easily setup and execute phishing engagements and security awareness training.
 
+---
+
+## Getting Started
+
 ### Install
 
-Installation of Gophish is dead-simple - just download and extract the zip containing the [release for your system](https://github.com/gophish/gophish/releases/), and run the binary. Gophish has binary releases for Windows, Mac, and Linux platforms.
+Installation of Gophish is dead-simple - just download and extract the zip containing the [release for your system](https://github.com/ezops-br/gophish/releases/), and run the binary. Gophish has binary releases for Windows, Mac, and Linux platforms.
 
 ### Building From Source
 **If you are building from source, please note that Gophish requires Go v1.10 or above!**
 
-To build Gophish from source, simply run ```git clone https://github.com/gophish/gophish.git``` and ```cd``` into the project source directory. Then, run ```go build```. After this, you should have a binary called ```gophish``` in the current directory.
+To build Gophish from source, simply run ```git clone https://github.com/ezops-br/gophish.git``` and ```cd``` into the project source directory. Then, run ```go build```. After this, you should have a binary called ```gophish``` in the current directory.
 
-### Docker
-You can also use Gophish via the official Docker container [here](https://hub.docker.com/r/gophish/gophish/).
+### Database Setup
 
-### Setup
-After running the Gophish binary, open an Internet browser to https://localhost:3333 and login with the default username and password listed in the log output.
-e.g.
+- The release comes with an **empty `gophish.db`** file (SQLite database) in the project root directory.
+- **If you already have a Gophish SQLite database** and want to use it:
+  - **Copy your own database file** into the project root directory, replacing the existing `gophish.db` (**name must be `gophish.db`**).
+
+> **Disclaimer:** We strongly recommend you keep a backup of your original database before replacing any files.
+
+### Running Gophish
+
+- Run the Gophish binary for your platform:
+  - On Windows: double-click `gophish.exe` or run it from the command prompt.
+  - On Linux/macOS: run `./gophish` from the terminal.
+- The application will start and display log output in the terminal.
+
+### Initial Login
+
+- **Default login:**  
+  - **Username:** `admin`  
+  - **Password:** The password will appear in the terminal output when you first run Gophish.
+- Example log output:
+  ```
+  time="2020-07-29T01:24:08Z" level=info msg="Please login with the username admin and the password 4304d5255378177d"
+  ```
+- > **Note:** This applies only if you are using the default (empty) database provided in the release. If you use your own database, your existing users and passwords will be used.
+
+### Accessing the Web Interface
+
+- Open your browser and go to:  
+  `http://127.0.0.1:3333` (or the address shown in the terminal)
+- Log in with the credentials above.
+
+---
+
+## Using the Report Template Feature
+
+### Template Requirements
+
+When creating or uploading a DOCX template for campaign reports, **your template must include the following tags**:
+
+- `{{sender}}` – Will be replaced with the sender information.
+- `{{subject}}` – Will be replaced with the email subject.
+- `{{screenshot}}` – Will be replaced with a screenshot of the email.
+
+**Place these tags in your template wherever you want the corresponding information to appear in the generated document.**
+
+---
+
+## Building From Source
+
+**If you are building from source, please note that Gophish requires Go v1.10 or above!**
+
+To build Gophish from source, simply run:
+
+```sh
+git clone https://github.com/ezops-br/gophish.git
+cd gophish
+go build
 ```
-time="2020-07-29T01:24:08Z" level=info msg="Please login with the username admin and the password 4304d5255378177d"
-```
 
-Releases of Gophish prior to v0.10.1 have a default username of `admin` and password of `gophish`.
-
-### Documentation
-
-Documentation can be found on our [site](http://getgophish.com/documentation). Find something missing? Let us know by filing an issue!
-
-### Issues
-
-Find a bug? Want more features? Find something missing in the documentation? Let us know! Please don't hesitate to [file an issue](https://github.com/gophish/gophish/issues/new) and we'll get right on it.
-
-### License
-```
-Gophish - Open-Source Phishing Framework
-
-The MIT License (MIT)
-
-Copyright (c) 2013 - 2020 Jordan Wright
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software ("Gophish Community Edition") and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-```
+After this, you should have a binary called `gophish` in the current directory.
