@@ -235,14 +235,22 @@ function generateReport() {
                 })
                 .then(function(response) {
                     if (!response.ok) {
-                        return response.json().then(function(json) {
-                            throw new Error(json.error || "Failed to generate report.");
-                        }).catch(function() {
-                            return response.text().then(function(text) {
-                                throw new Error(text || "Failed to generate report.");
-                            });
+                        return response.text().then(function(text) {
+                            let errorMessage = "An error occurred while generating the report, please try again later.";
+
+                            try {
+                                const json = JSON.parse(text);
+                                errorMessage = json.error || errorMsg;
+                            } catch (e) {
+                                if (text) {
+                                    errorMessage = text;
+                                }
+                            }
+
+                            throw new Error(errorMessage);
                         });
                     }
+
                     return response.blob();
                 })
                 .then(function(blob) {
