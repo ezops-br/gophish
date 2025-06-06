@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/gophish/gophish/logger"
@@ -719,23 +720,25 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 	}
 
 	cmd := exec.Command(
-		"py",
+		"python3",
 		goReportScriptPath,
 		"--id", campaignID,
 		"--template", templateFile,
 		"--format", "word",
-		"--filename", outputPath,
+		"--filename", strings.ReplaceAll(outputPath, ".docx", ""),
 		"--lang", lang,
 		"--config", goReportConfigPath,
 	)
+	cmd.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
-	_, err = cmd.CombinedOutput()
+	output, err := cmd.CombinedOutput()
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate report: %v", err)
+		log.Errorf("GoReport.py output:\n%s", string(output))
+		return nil, fmt.Errorf("failed to generate report: %v\n%s", err, string(output))
 	}
 
-	reportBytes, err := os.ReadFile(outputPath + ".docx")
+	reportBytes, err := os.ReadFile(outputPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read generated report: %v", err)
 	}
