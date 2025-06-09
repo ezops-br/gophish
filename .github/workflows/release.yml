@@ -117,9 +117,6 @@ jobs:
                   for BINARY in $RELEASE_DIR/*
                   do
                     cp $BINARY .;
-                    if [[ $(basename $RELEASE_DIR) == *windows* ]]; then
-                      cp -r Goreport/dist/GoReport .
-                    fi
                     zip -r releases/$(basename $RELEASE_DIR).zip \
                       $(basename ${BINARY}) \
                       Goreport \
