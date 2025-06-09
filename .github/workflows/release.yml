@@ -119,9 +119,13 @@ jobs:
                     if [ -f "$BINARY" ]; then
                       cp $BINARY .;
                       if [[ $(basename $RELEASE_DIR) == *windows* ]]; then
-                        cp Goreport/dist/GoReport.exe ./
+                        if [ -f "$RELEASE_DIR/GoReport.exe" ]; then
+                          cp "$RELEASE_DIR/GoReport.exe" ./
+                        fi
                       elif [[ $(basename $RELEASE_DIR) == *linux* ]] || [[ $(basename $RELEASE_DIR) == *osx* ]]; then
-                        cp Goreport/dist/GoReport ./
+                        if [ -f "$RELEASE_DIR/GoReport" ]; then
+                          cp "$RELEASE_DIR/GoReport" ./
+                        fi
                       fi
                       ZIP_CONTENTS=$(basename ${BINARY});
                       if [[ $(basename $RELEASE_DIR) == *windows* ]]; then
@@ -147,7 +151,8 @@ jobs:
                       rm $BINARY;
                       if [[ -f GoReport.exe ]]; then
                         rm GoReport.exe;
-                      elif [[ -f GoReport ]]; then
+                      fi
+                      if [[ -f GoReport ]]; then
                         rm GoReport;
                       fi
                     fi
