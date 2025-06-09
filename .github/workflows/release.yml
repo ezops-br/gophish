@@ -95,8 +95,7 @@ jobs:
                 name: ${{ env.RELEASE }}
                 path: |
                   ${{ matrix.bin }}
-                  Goreport/dist/GoReport/GoReport.exe
-                  Goreport/dist/GoReport/GoReport
+                  ${{ (matrix.os == 'windows-latest' && 'Goreport/dist/GoReport.exe') || (matrix.os != 'windows-latest' && 'Goreport/dist/GoReport') }}
 
     package:
         name: Package Assets
