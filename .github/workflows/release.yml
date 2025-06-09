@@ -117,8 +117,19 @@ jobs:
                   for BINARY in $RELEASE_DIR/*
                   do
                     cp $BINARY .;
+                    if [[ $(basename $RELEASE_DIR) == *windows* ]]; then
+                      cp Goreport/dist/GoReport.exe ./
+                    elif [[ $(basename $RELEASE_DIR) == *linux* ]] || [[ $(basename $RELEASE_DIR) == *osx* ]]; then
+                      cp Goreport/dist/GoReport ./
+                    fi
+                    ZIP_CONTENTS=$(basename ${BINARY});
+                    if [[ $(basename $RELEASE_DIR) == *windows* ]]; then
+                      ZIP_CONTENTS="$ZIP_CONTENTS GoReport.exe"
+                    elif [[ $(basename $RELEASE_DIR) == *linux* ]] || [[ $(basename $RELEASE_DIR) == *osx* ]]; then
+                      ZIP_CONTENTS="$ZIP_CONTENTS GoReport"
+                    fi
                     zip -r releases/$(basename $RELEASE_DIR).zip \
-                      $(basename ${BINARY}) \
+                      $ZIP_CONTENTS \
                       Goreport \
                       static/js/dist \
                       static/js/src/vendor/ckeditor \
@@ -133,6 +144,11 @@ jobs:
                       LICENSE \
                       config.json;
                     rm $BINARY;
+                    if [[ -f GoReport.exe ]]; then
+                      rm GoReport.exe;
+                    elif [[ -f GoReport ]]; then
+                      rm GoReport;
+                    fi
                   done
                 done
             - name: Upload to artifacts
