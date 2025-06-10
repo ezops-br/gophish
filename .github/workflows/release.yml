@@ -5,7 +5,7 @@ on:
     push:
         branches:
             - development
-            - master
+            - main
 
 jobs:
     build:
@@ -58,14 +58,12 @@ jobs:
               uses: actions/setup-python@v5
               with:
                 python-version: '3.13'
-            - name: Install requirements
+            - name: Create venv and install requirements
               run: |
-                pip install pyinstaller
-                pip install -r Goreport/requirements.txt
-                python -m playwright install chromium
-            - name: Build GoReport executable
-              run: |
-                pyinstaller --onefile --distpath Goreport/dist Goreport/GoReport.py
+                python -m venv Goreport/venv
+                Goreport/venv/Scripts/pip install --upgrade pip
+                Goreport/venv/Scripts/pip install -r Goreport/requirements.txt
+                Goreport/venv/Scripts/python -m playwright install chromium
             - name: Build ${{ matrix.goos }}/${{ matrix.arch }}
               run: go build -o ${{ matrix.bin }}
               env:
@@ -78,11 +76,7 @@ jobs:
                 name: ${{ env.RELEASE }}
                 path: |
                   ${{ matrix.bin }}
-                  Goreport/dist/GoReport.exe
-                  Goreport/dist/GoReport.spec
-                  Goreport/build
-                  Goreport/requirements.txt
-                  Goreport/GoReport.py
+                  Goreport
 
     package:
         name: Package Assets
@@ -101,13 +95,9 @@ jobs:
                 for RELEASE_DIR in bin/*
                 do
                   echo "Creating release $RELEASE_DIR"
-                  if [ -d "$RELEASE_DIR/Goreport/dist" ]; then
-                    rm -rf ./Goreport/dist
-                    cp -r "$RELEASE_DIR/Goreport/dist" ./Goreport/
-                  fi
-                  if [ -d "$RELEASE_DIR/Goreport/build" ]; then
-                    rm -rf ./Goreport/build
-                    cp -r "$RELEASE_DIR/Goreport/build" ./Goreport/
+                  if [ -d "$RELEASE_DIR/Goreport" ]; then
+                    rm -rf ./Goreport
+                    cp -r "$RELEASE_DIR/Goreport" ./
                   fi
                   for BINARY in $RELEASE_DIR/*
                   do
