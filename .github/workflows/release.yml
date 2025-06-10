@@ -101,7 +101,7 @@ jobs:
                   echo "Creating release $RELEASE_DIR"
                   for BINARY in $RELEASE_DIR/*
                   do
-                    cp $BINARY .;
+                    cp -r $BINARY .;
                     cp -r $RELEASE_DIR/GoReport.exe ./Goreport/dist/GoReport.exe
                     zip -r releases/$(basename $RELEASE_DIR).zip \
                       $(basename ${BINARY}) \
