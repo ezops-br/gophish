@@ -54,15 +54,6 @@ jobs:
             - uses: actions/checkout@v4
               with:
                 submodules: recursive
-            - name: Set up Python
-              uses: actions/setup-python@v5
-              with:
-                python-version: '3.13'
-            - name: Create venv and install requirements
-              run: |
-                python -m venv Goreport/venv
-                Goreport/venv/Scripts/python.exe -m pip install --upgrade pip
-                Goreport/venv/Scripts/python.exe -m pip install -r Goreport/requirements.txt
             - name: Build ${{ matrix.goos }}/${{ matrix.arch }}
               run: go build -o ${{ matrix.bin }}
               env:
@@ -73,9 +64,7 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                 name: ${{ env.RELEASE }}
-                path: |
-                  ${{ matrix.bin }}
-                  Goreport
+                path: ${{ matrix.bin }}
 
     package:
         name: Package Assets
@@ -94,10 +83,6 @@ jobs:
                 for RELEASE_DIR in bin/*
                 do
                   echo "Creating release $RELEASE_DIR"
-                  if [ -d "$RELEASE_DIR/Goreport" ]; then
-                    rm -rf ./Goreport
-                    cp -r "$RELEASE_DIR/Goreport" ./
-                  fi
                   for BINARY in $RELEASE_DIR/*
                   do
                     if [ -f "$BINARY" ]; then
