@@ -60,6 +60,7 @@ jobs:
                 python-version: '3.13'
             - name: Install requirements
               run: |
+                pip install pyinstaller
                 pip install -r Goreport/requirements.txt
                 python -m playwright install chromium
             - name: Build GoReport executable
