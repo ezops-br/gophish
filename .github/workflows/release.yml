@@ -101,20 +101,18 @@ jobs:
                 for RELEASE_DIR in bin/*
                 do
                   echo "Creating release $RELEASE_DIR"
-                  if [ -f "$RELEASE_DIR/GoReport.exe" ]; then
-                    cp "$RELEASE_DIR/GoReport.exe" ./Goreport/dist/GoReport.exe
+                  if [ -d "$RELEASE_DIR/Goreport/dist" ]; then
+                    rm -rf ./Goreport/dist
+                    cp -r "$RELEASE_DIR/Goreport/dist" ./Goreport/
                   fi
-                  if [ -f "$RELEASE_DIR/GoReport.spec" ]; then
-                    cp "$RELEASE_DIR/GoReport.spec" ./Goreport/dist/GoReport.spec
-                  fi
-                  if [ -d "$RELEASE_DIR/build" ]; then
+                  if [ -d "$RELEASE_DIR/Goreport/build" ]; then
                     rm -rf ./Goreport/build
-                    cp -r "$RELEASE_DIR/build" ./Goreport/
+                    cp -r "$RELEASE_DIR/Goreport/build" ./Goreport/
                   fi
                   for BINARY in $RELEASE_DIR/*
                   do
                     if [ -f "$BINARY" ]; then
-                      cp $BINARY .;
+                      cp "$BINARY" .;
                       zip -r releases/$(basename $RELEASE_DIR).zip \
                         $(basename ${BINARY}) \
                         Goreport \
