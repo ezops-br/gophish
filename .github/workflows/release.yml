@@ -13,7 +13,7 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                os: [windows-latest, ubuntu-latest, macos-latest]
+                os: [windows-latest]
                 arch: ['386', amd64]
                 # We sometimes use different verbiage for things (e.g. "darwin"
                 # for the GOOS build flag and "osx" in the actual release ZIP).
@@ -23,30 +23,30 @@ jobs:
                       goos: windows
                       bin: 'gophish.exe'
                       releaseos: windows
-                    - os: ubuntu-latest
-                      goos: linux
-                      bin: 'gophish'
-                      releaseos: linux
-                    - os: macos-latest
-                      goos: darwin
-                      bin: 'gophish'
-                      releaseos: osx
+                    # - os: ubuntu-latest
+                    #   goos: linux
+                    #   bin: 'gophish'
+                    #   releaseos: linux
+                    # - os: macos-latest
+                    #   goos: darwin
+                    #   bin: 'gophish'
+                    #   releaseos: osx
                 # Don't build windows-32bit due to missing MinGW dependencies
                 # Don't build osx-32bit due to eventual drop in Go support
                 exclude:
                     - os: windows-latest
                       arch: '386'
-                    - os: macos-latest
-                      arch: '386'
+                    # - os: macos-latest
+                    #   arch: '386'
         steps:
             - name: Set up Go
               uses: actions/setup-go@v2
               with:
                 go-version: 1.22
-            - if: matrix.os == 'ubuntu-latest'
-              run: sudo apt-get update && sudo apt-get install -y gcc-multilib
-            - if: matrix.arch == '386'
-              run: echo "RELEASE=gophish-${{ github.event.release.tag_name }}-${{ matrix.releaseos }}-32bit" >> $GITHUB_ENV
+            # - if: matrix.os == 'ubuntu-latest'
+            #   run: sudo apt-get update && sudo apt-get install -y gcc-multilib
+            # - if: matrix.arch == '386'
+            #   run: echo "RELEASE=gophish-${{ github.event.release.tag_name }}-${{ matrix.releaseos }}-32bit" >> $GITHUB_ENV
             - if: matrix.arch == 'amd64'
               run: echo "RELEASE=gophish-${{ github.event.release.tag_name }}-${{ matrix.releaseos }}-64bit" >> $GITHUB_ENV
             - if: matrix.os == 'windows-latest'
@@ -78,7 +78,7 @@ jobs:
                 name: ${{ env.RELEASE }}
                 path: |
                   ${{ matrix.bin }}
-                  Goreport/dist/GoReport*
+                  Goreport/dist/GoReport.exe
                   Goreport/requirements.txt
                   Goreport/GoReport.py
 
@@ -102,11 +102,7 @@ jobs:
                   for BINARY in $RELEASE_DIR/*
                   do
                     cp $BINARY .;
-                    if [[ $(basename $RELEASE_DIR) == *windows* ]]; then
-                      cp $RELEASE_DIR/GoReport.exe ./Goreport/dist/GoReport.exe
-                    elif [[ $(basename $RELEASE_DIR) == *linux* ]] || [[ $(basename $RELEASE_DIR) == *osx* ]]; then
-                      cp $RELEASE_DIR/GoReport ./Goreport/dist/GoReport
-                    fi
+                    cp $RELEASE_DIR/GoReport.exe ./Goreport/dist/GoReport.exe
                     zip -r releases/$(basename $RELEASE_DIR).zip \
                       $(basename ${BINARY}) \
                       Goreport \
