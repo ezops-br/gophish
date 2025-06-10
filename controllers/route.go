@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -435,6 +436,20 @@ func (as *AdminServer) Login(w http.ResponseWriter, r *http.Request) {
 
 		if err := ensureGoreportConfig(basePath, host, apiKey); err != nil {
 			log.Errorf("Failed to write Goreport config: %v", err)
+		}
+
+		installCmd := exec.Command(
+			"python",
+			"-m", "playwright", "install", "chromium",
+		)
+		installCmd.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
+
+		installOut, installErr := installCmd.CombinedOutput()
+		log.Infof("Playwright install output:\n%s", string(installOut))
+
+		if installErr != nil {
+			log.Errorf("Failed to install Playwright browsers: %v", installErr)
+			return
 		}
 
 		as.nextOrIndex(w, r)

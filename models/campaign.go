@@ -720,34 +720,8 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 	log.Infof("Using language: %s", lang)
 	log.Infof("Python script will output to: %s", outputPath)
 
-	venvPython := filepath.Join(basePath, "Goreport", "venv", "Scripts", "python.exe")
-
-	checkCmd := exec.Command(
-		venvPython,
-		"-m", "playwright", "show-browser-info",
-	)
-	checkCmd.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
-
-	if err := checkCmd.Run(); err != nil {
-		log.Infof("Playwright browsers not found, installing...")
-
-		installCmd := exec.Command(
-			venvPython,
-			"-m", "playwright", "install", "chromium",
-		)
-		installCmd.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
-
-		installOut, installErr := installCmd.CombinedOutput()
-		log.Infof("Playwright install output:\n%s", string(installOut))
-
-		if installErr != nil {
-			log.Errorf("Failed to install Playwright browsers: %v", installErr)
-			return nil, fmt.Errorf("failed to install Playwright browsers: %v\n%s", installErr, string(installOut))
-		}
-	}
-
 	cmd := exec.Command(
-		venvPython,
+		"python",
 		goReportScriptPath,
 		"--id", campaignID,
 		"--template", templateFile,
