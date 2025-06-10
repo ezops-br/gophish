@@ -128,15 +128,15 @@ func (as *AdminServer) Start() {
 	}
 
 	exePath, err := os.Executable()
-
 	if err != nil {
 		log.Errorf("Error getting executable path: %v", err)
 		return
 	}
 
 	basePath := filepath.Dir(exePath)
+	venvDir := filepath.Join(basePath, "Goreport", "venv")
+	venvPython := filepath.Join(venvDir, "Scripts", "python.exe")
 
-	venvPython := filepath.Join(basePath, "Goreport", "venv", "Scripts", "python.exe")
 	if _, err := os.Stat(venvPython); os.IsNotExist(err) {
 		log.Errorf("Goreport venv not found. Creating...")
 
@@ -150,6 +150,7 @@ func (as *AdminServer) Start() {
 
 		if createVenvErr != nil {
 			log.Errorf("Failed to create venv: %v", createVenvErr)
+			os.RemoveAll(venvDir)
 			return
 		}
 
@@ -164,6 +165,7 @@ func (as *AdminServer) Start() {
 
 		if pipUpdateErr != nil {
 			log.Errorf("Failed to update pip: %v", pipUpdateErr)
+			os.RemoveAll(venvDir)
 			return
 		}
 
@@ -178,6 +180,7 @@ func (as *AdminServer) Start() {
 
 		if installRequirementsErr != nil {
 			log.Errorf("Failed to install requirements: %v", installRequirementsErr)
+			os.RemoveAll(venvDir)
 			return
 		}
 
@@ -192,6 +195,7 @@ func (as *AdminServer) Start() {
 
 		if installPlaywrightErr != nil {
 			log.Errorf("Failed to install Playwright: %v", installPlaywrightErr)
+			os.RemoveAll(venvDir)
 			return
 		}
 
@@ -206,6 +210,7 @@ func (as *AdminServer) Start() {
 
 		if installErr != nil {
 			log.Errorf("Failed to install Playwright browsers: %v", installErr)
+			os.RemoveAll(venvDir)
 			return
 		}
 	} else {
