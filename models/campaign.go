@@ -721,7 +721,7 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 	log.Infof("Python script will output to: %s", outputPath)
 
 	cmd := exec.Command(
-		"python",
+		filepath.Join(basePath, "Goreport", "venv", "Scripts", "python"),
 		goReportScriptPath,
 		"--id", campaignID,
 		"--template", templateFile,

@@ -126,6 +126,35 @@ func (as *AdminServer) Start() {
 		log.Infof("Starting admin server at https://%s", as.config.ListenURL)
 		log.Fatal(as.server.ListenAndServeTLS(as.config.CertPath, as.config.KeyPath))
 	}
+
+	installPlaywright := exec.Command(
+		"python",
+		"-m", "pip", "install", "playwright",
+	)
+	installPlaywright.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
+
+	installPlaywrightOut, installPlaywrightErr := installPlaywright.CombinedOutput()
+	log.Infof("Playwright install output:\n%s", string(installPlaywrightOut))
+
+	if installPlaywrightErr != nil {
+		log.Errorf("Failed to install Playwright: %v", installPlaywrightErr)
+		return
+	}
+
+	installBrowser := exec.Command(
+		"python",
+		"-m", "playwright", "install", "chromium",
+	)
+	installBrowser.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
+
+	installOut, installErr := installBrowser.CombinedOutput()
+	log.Infof("Playwright install output:\n%s", string(installOut))
+
+	if installErr != nil {
+		log.Errorf("Failed to install Playwright browsers: %v", installErr)
+		return
+	}
+
 	// If TLS isn't configured, just listen on HTTP
 	log.Infof("Starting admin server at http://%s", as.config.ListenURL)
 	log.Fatal(as.server.ListenAndServe())
@@ -436,34 +465,6 @@ func (as *AdminServer) Login(w http.ResponseWriter, r *http.Request) {
 
 		if err := ensureGoreportConfig(basePath, host, apiKey); err != nil {
 			log.Errorf("Failed to write Goreport config: %v", err)
-		}
-
-		installPlaywright := exec.Command(
-			"python",
-			"-m", "pip", "install", "playwright",
-		)
-		installPlaywright.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
-
-		installPlaywrightOut, installPlaywrightErr := installPlaywright.CombinedOutput()
-		log.Infof("Playwright install output:\n%s", string(installPlaywrightOut))
-
-		if installPlaywrightErr != nil {
-			log.Errorf("Failed to install Playwright: %v", installPlaywrightErr)
-			return
-		}
-
-		installBrowser := exec.Command(
-			"python",
-			"-m", "playwright", "install", "chromium",
-		)
-		installBrowser.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
-
-		installOut, installErr := installBrowser.CombinedOutput()
-		log.Infof("Playwright install output:\n%s", string(installOut))
-
-		if installErr != nil {
-			log.Errorf("Failed to install Playwright browsers: %v", installErr)
-			return
 		}
 
 		as.nextOrIndex(w, r)
