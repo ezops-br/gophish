@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -687,20 +686,12 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 
 	basePath := filepath.Dir(exePath)
 
-	var goReportBin string
-
-	switch runtime.GOOS {
-	case "windows":
-		goReportBin = filepath.Join(basePath, "Goreport", "dist", "GoReport.exe")
-	default:
-		goReportBin = filepath.Join(basePath, "Goreport", "dist", "GoReport")
-	}
-
+	goReportScriptPath := filepath.Join(basePath, "Goreport", "GoReport.py")
 	goReportConfigPath := filepath.Join(basePath, "Goreport", "Gophish.config")
 
-	if _, err := os.Stat(goReportBin); os.IsNotExist(err) {
-		log.Errorf("GoReport binary not found at: %s", goReportBin)
-		return nil, fmt.Errorf("GoReport binary not found at: %s. Ensure the Goreport directory is correctly placed relative to the Gophish executable", goReportBin)
+	if _, err := os.Stat(goReportScriptPath); os.IsNotExist(err) {
+		log.Errorf("GoReport script not found at: %s", goReportScriptPath)
+		return nil, fmt.Errorf("GoReport script not found at: %s. Ensure the Goreport directory is correctly placed relative to the Gophish executable", goReportScriptPath)
 	}
 
 	if _, err := os.Stat(goReportConfigPath); os.IsNotExist(err) {
@@ -723,14 +714,15 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 	}
 
 	log.Infof("Generating report for campaign %s", campaignID)
-	log.Infof("Using script: %s", goReportBin)
+	log.Infof("Using script: %s", goReportScriptPath)
 	log.Infof("Using config: %s", goReportConfigPath)
 	log.Infof("Using template: %s", templateFile)
 	log.Infof("Using language: %s", lang)
 	log.Infof("Python script will output to: %s", outputPath)
 
 	cmd := exec.Command(
-		goReportBin,
+		"python",
+		goReportScriptPath,
 		"--id", campaignID,
 		"--template", templateFile,
 		"--format", "word",
