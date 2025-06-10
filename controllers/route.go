@@ -438,13 +438,27 @@ func (as *AdminServer) Login(w http.ResponseWriter, r *http.Request) {
 			log.Errorf("Failed to write Goreport config: %v", err)
 		}
 
-		installCmd := exec.Command(
+		installPlaywright := exec.Command(
+			"python",
+			"-m", "pip", "install", "playwright",
+		)
+		installPlaywright.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
+
+		installPlaywrightOut, installPlaywrightErr := installPlaywright.CombinedOutput()
+		log.Infof("Playwright install output:\n%s", string(installPlaywrightOut))
+
+		if installPlaywrightErr != nil {
+			log.Errorf("Failed to install Playwright: %v", installPlaywrightErr)
+			return
+		}
+
+		installBrowser := exec.Command(
 			"python",
 			"-m", "playwright", "install", "chromium",
 		)
-		installCmd.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
+		installBrowser.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
-		installOut, installErr := installCmd.CombinedOutput()
+		installOut, installErr := installBrowser.CombinedOutput()
 		log.Infof("Playwright install output:\n%s", string(installOut))
 
 		if installErr != nil {
