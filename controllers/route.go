@@ -135,34 +135,68 @@ func (as *AdminServer) Start() {
 	}
 
 	basePath := filepath.Dir(exePath)
+
 	venvPython := filepath.Join(basePath, "Goreport", "venv", "Scripts", "python.exe")
+	if _, err := os.Stat(venvPython); os.IsNotExist(err) {
+		log.Errorf("Goreport venv not found. Creating...")
 
-	installPlaywright := exec.Command(
-		venvPython,
-		"-m", "pip", "install", "playwright",
-	)
-	installPlaywright.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
+		createVenv := exec.Command(
+			"python",
+			"-m", "venv", "Goreport", "venv",
+		)
+		createVenv.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
-	installPlaywrightOut, installPlaywrightErr := installPlaywright.CombinedOutput()
-	log.Infof("Playwright install output:\n%s", string(installPlaywrightOut))
+		createVenvOut, createVenvErr := createVenv.CombinedOutput()
+		log.Infof("Venv creation output:\n%s", string(createVenvOut))
 
-	if installPlaywrightErr != nil {
-		log.Errorf("Failed to install Playwright: %v", installPlaywrightErr)
-		return
-	}
+		if createVenvErr != nil {
+			log.Errorf("Failed to create venv: %v", createVenvErr)
+			return
+		}
 
-	installBrowser := exec.Command(
-		venvPython,
-		"-m", "playwright", "install", "chromium",
-	)
-	installBrowser.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
+		installRequirements := exec.Command(
+			venvPython,
+			"-m", "pip", "install", "-r", "Goreport", "requirements.txt",
+		)
+		installRequirements.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
-	installOut, installErr := installBrowser.CombinedOutput()
-	log.Infof("Playwright browser install output:\n%s", string(installOut))
+		installRequirementsOut, installRequirementsErr := installRequirements.CombinedOutput()
+		log.Infof("Requirements install output:\n%s", string(installRequirementsOut))
 
-	if installErr != nil {
-		log.Errorf("Failed to install Playwright browsers: %v", installErr)
-		return
+		if installRequirementsErr != nil {
+			log.Errorf("Failed to install requirements: %v", installRequirementsErr)
+			return
+		}
+
+		installPlaywright := exec.Command(
+			venvPython,
+			"-m", "pip", "install", "playwright",
+		)
+		installPlaywright.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
+
+		installPlaywrightOut, installPlaywrightErr := installPlaywright.CombinedOutput()
+		log.Infof("Playwright install output:\n%s", string(installPlaywrightOut))
+
+		if installPlaywrightErr != nil {
+			log.Errorf("Failed to install Playwright: %v", installPlaywrightErr)
+			return
+		}
+
+		installBrowser := exec.Command(
+			venvPython,
+			"-m", "playwright", "install", "chromium",
+		)
+		installBrowser.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
+
+		installOut, installErr := installBrowser.CombinedOutput()
+		log.Infof("Playwright browser install output:\n%s", string(installOut))
+
+		if installErr != nil {
+			log.Errorf("Failed to install Playwright browsers: %v", installErr)
+			return
+		}
+	} else {
+		log.Infof("Goreport venv found at: %s. Proceeding...", venvPython)
 	}
 
 	// If TLS isn't configured, just listen on HTTP
