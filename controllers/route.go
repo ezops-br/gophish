@@ -127,8 +127,18 @@ func (as *AdminServer) Start() {
 		log.Fatal(as.server.ListenAndServeTLS(as.config.CertPath, as.config.KeyPath))
 	}
 
+	exePath, err := os.Executable()
+
+	if err != nil {
+		log.Errorf("Error getting executable path: %v", err)
+		return
+	}
+
+	basePath := filepath.Dir(exePath)
+	venvPython := filepath.Join(basePath, "Goreport", "venv", "Scripts", "python.exe")
+
 	installPlaywright := exec.Command(
-		"python",
+		venvPython,
 		"-m", "pip", "install", "playwright",
 	)
 	installPlaywright.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
@@ -142,13 +152,13 @@ func (as *AdminServer) Start() {
 	}
 
 	installBrowser := exec.Command(
-		"python",
+		venvPython,
 		"-m", "playwright", "install", "chromium",
 	)
 	installBrowser.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
 	installOut, installErr := installBrowser.CombinedOutput()
-	log.Infof("Playwright install output:\n%s", string(installOut))
+	log.Infof("Playwright browser install output:\n%s", string(installOut))
 
 	if installErr != nil {
 		log.Errorf("Failed to install Playwright browsers: %v", installErr)
