@@ -61,9 +61,8 @@ jobs:
             - name: Create venv and install requirements
               run: |
                 python -m venv Goreport/venv
-                Goreport/venv/Scripts/pip install --upgrade pip
-                Goreport/venv/Scripts/pip install -r Goreport/requirements.txt
-                Goreport/venv/Scripts/python -m playwright install chromium
+                Goreport/venv/Scripts/python.exe -m pip install --upgrade pip
+                Goreport/venv/Scripts/python.exe -m pip install -r Goreport/requirements.txt
             - name: Build ${{ matrix.goos }}/${{ matrix.arch }}
               run: go build -o ${{ matrix.bin }}
               env:
