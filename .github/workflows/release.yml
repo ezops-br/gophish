@@ -79,6 +79,8 @@ jobs:
                 path: |
                   ${{ matrix.bin }}
                   Goreport/dist/GoReport.exe
+                  Goreport/dist/GoReport.spec
+                  Goreport/build
                   Goreport/requirements.txt
                   Goreport/GoReport.py
 
@@ -99,26 +101,37 @@ jobs:
                 for RELEASE_DIR in bin/*
                 do
                   echo "Creating release $RELEASE_DIR"
+                  if [ -f "$RELEASE_DIR/GoReport.exe" ]; then
+                    cp "$RELEASE_DIR/GoReport.exe" ./Goreport/dist/GoReport.exe
+                  fi
+                  if [ -f "$RELEASE_DIR/GoReport.spec" ]; then
+                    cp "$RELEASE_DIR/GoReport.spec" ./Goreport/dist/GoReport.spec
+                  fi
+                  if [ -d "$RELEASE_DIR/build" ]; then
+                    rm -rf ./Goreport/build
+                    cp -r "$RELEASE_DIR/build" ./Goreport/
+                  fi
                   for BINARY in $RELEASE_DIR/*
                   do
-                    cp -r $BINARY .;
-                    cp -r $RELEASE_DIR/GoReport.exe ./Goreport/dist/GoReport.exe
-                    zip -r releases/$(basename $RELEASE_DIR).zip \
-                      $(basename ${BINARY}) \
-                      Goreport \
-                      static/js/dist \
-                      static/js/src/vendor/ckeditor \
-                      static/css/dist \
-                      static/images \
-                      static/font \
-                      static/db \
-                      db \
-                      templates \
-                      README.md \
-                      VERSION \
-                      LICENSE \
-                      config.json;
-                    rm $(basename ${BINARY});
+                    if [ -f "$BINARY" ]; then
+                      cp $BINARY .;
+                      zip -r releases/$(basename $RELEASE_DIR).zip \
+                        $(basename ${BINARY}) \
+                        Goreport \
+                        static/js/dist \
+                        static/js/src/vendor/ckeditor \
+                        static/css/dist \
+                        static/images \
+                        static/font \
+                        static/db \
+                        db \
+                        templates \
+                        README.md \
+                        VERSION \
+                        LICENSE \
+                        config.json;
+                      rm $(basename ${BINARY});
+                    fi
                   done
                 done
             - name: Upload to artifacts
