@@ -140,7 +140,9 @@ func (as *AdminServer) Start() {
 	if _, err := os.Stat(venvPython); os.IsNotExist(err) {
 		log.Errorf("Goreport venv not found. Creating...")
 
-		createVenv := exec.Command("python -m venv Goreport/venv")
+		createVenv := exec.Command(
+			"python",
+			"-m", "venv", "Goreport/venv")
 		createVenv.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
 		createVenvOut, createVenvErr := createVenv.CombinedOutput()
@@ -151,9 +153,23 @@ func (as *AdminServer) Start() {
 			return
 		}
 
+		pipUpdate := exec.Command(
+			venvPython,
+			"-m", "pip", "install", "--upgrade", "pip",
+		)
+		pipUpdate.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
+
+		pipUpdateOut, pipUpdateErr := pipUpdate.CombinedOutput()
+		log.Infof("Pip update output:\n%s", string(pipUpdateOut))
+
+		if pipUpdateErr != nil {
+			log.Errorf("Failed to update pip: %v", pipUpdateErr)
+			return
+		}
+
 		installRequirements := exec.Command(
 			venvPython,
-			"-m", "pip", "install", "-r", "Goreport", "requirements.txt",
+			"-m", "pip", "install", "-r", "Goreport/requirements.txt",
 		)
 		installRequirements.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
