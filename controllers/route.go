@@ -140,10 +140,7 @@ func (as *AdminServer) Start() {
 	if _, err := os.Stat(venvPython); os.IsNotExist(err) {
 		log.Errorf("Goreport venv not found. Creating...")
 
-		createVenv := exec.Command(
-			"python",
-			"-m", "venv", "Goreport", "venv",
-		)
+		createVenv := exec.Command("python -m venv Goreport/venv")
 		createVenv.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
 		createVenvOut, createVenvErr := createVenv.CombinedOutput()
