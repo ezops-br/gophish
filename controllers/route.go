@@ -136,13 +136,24 @@ func (as *AdminServer) Start() {
 	basePath := filepath.Dir(exePath)
 	venvDir := filepath.Join(basePath, "Goreport", "venv")
 	venvPython := filepath.Join(venvDir, "Scripts", "python.exe")
+	venvReadyMarker := filepath.Join(venvDir, ".gophish_ready")
 
+	venvNeedsSetup := false
 	if _, err := os.Stat(venvPython); os.IsNotExist(err) {
-		log.Errorf("Goreport venv not found. Creating...")
+		venvNeedsSetup = true
+	}
 
-		createVenv := exec.Command(
-			"python",
-			"-m", "venv", "Goreport/venv")
+	if _, err := os.Stat(venvReadyMarker); os.IsNotExist(err) {
+		venvNeedsSetup = true
+	}
+
+	if venvNeedsSetup {
+		fmt.Println("Setting up Python environment for GoReport. Please wait...")
+
+		os.RemoveAll(venvDir)
+
+		fmt.Println("[1/5] Creating Python venv...")
+		createVenv := exec.Command("python", "-m", "venv", "Goreport/venv")
 		createVenv.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
 		createVenvOut, createVenvErr := createVenv.CombinedOutput()
@@ -154,10 +165,8 @@ func (as *AdminServer) Start() {
 			return
 		}
 
-		pipUpdate := exec.Command(
-			venvPython,
-			"-m", "pip", "install", "--upgrade", "pip",
-		)
+		fmt.Println("[2/5] Upgrading pip...")
+		pipUpdate := exec.Command(venvPython, "-m", "pip", "install", "--upgrade", "pip")
 		pipUpdate.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
 		pipUpdateOut, pipUpdateErr := pipUpdate.CombinedOutput()
@@ -169,6 +178,7 @@ func (as *AdminServer) Start() {
 			return
 		}
 
+		fmt.Println("[3/5] Installing requirements...")
 		installRequirements := exec.Command(
 			venvPython,
 			"-m", "pip", "install", "-r", "Goreport/requirements.txt",
@@ -184,6 +194,7 @@ func (as *AdminServer) Start() {
 			return
 		}
 
+		fmt.Println("[4/5] Installing Playwright...")
 		installPlaywright := exec.Command(
 			venvPython,
 			"-m", "pip", "install", "playwright",
@@ -199,6 +210,7 @@ func (as *AdminServer) Start() {
 			return
 		}
 
+		fmt.Println("[5/5] Installing Chromium browser for Playwright...")
 		installBrowser := exec.Command(
 			venvPython,
 			"-m", "playwright", "install", "chromium",
@@ -213,6 +225,9 @@ func (as *AdminServer) Start() {
 			os.RemoveAll(venvDir)
 			return
 		}
+
+		os.WriteFile(venvReadyMarker, []byte("ok"), 0644)
+		fmt.Println("Python environment setup complete!")
 	} else {
 		log.Infof("Goreport venv found at: %s. Proceeding...", venvPython)
 	}
