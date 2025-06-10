@@ -102,7 +102,7 @@ jobs:
                   for BINARY in $RELEASE_DIR/*
                   do
                     cp $BINARY .;
-                    cp $RELEASE_DIR/GoReport.exe ./Goreport/dist/GoReport.exe
+                    cp -r $RELEASE_DIR/GoReport.exe ./Goreport/dist/GoReport.exe
                     zip -r releases/$(basename $RELEASE_DIR).zip \
                       $(basename ${BINARY}) \
                       Goreport \
