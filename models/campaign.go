@@ -723,13 +723,20 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 
 	venvDir := filepath.Join(basePath, "Goreport", "venv")
 
+	log.Infof("Venv dir: %s", venvDir)
+
+	log.Infof("runtime.GOOS: %s", runtime.GOOS)
+
 	var venvPython string
 	if runtime.GOOS == "windows" {
 		venvPython = filepath.Join(venvDir, "Scripts", "python.exe")
+		log.Infof("[windows] venvPython: %s", venvPython)
 	} else {
 		venvPython = filepath.Join(venvDir, "bin", "python")
+		log.Infof("[linux] venvPython: %s", venvPython)
 	}
 
+	log.Infof("Running goreport script...")
 	cmd := exec.Command(
 		venvPython,
 		goReportScriptPath,
@@ -740,7 +747,10 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 		"--lang", lang,
 		"--config", goReportConfigPath,
 	)
+	log.Infof("Script executed")
 	cmd.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
+
+	log.Infof("Generating combined output for command: %s", cmd.String())
 
 	output, err := cmd.CombinedOutput()
 	log.Infof("GoReport output:\n%s", string(output))
