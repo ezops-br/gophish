@@ -11,11 +11,45 @@ Gophish: Open-Source Phishing Toolkit
 
 ---
 
+## Python Requirement
+
+> **Important:**  
+> Gophish requires **Python 3.11 or newer** to be installed on your system **before you can run the application**.
+
+### How to Install Python
+
+1. **Download Python:**  
+   Go to the [official Python downloads page](https://www.python.org/downloads/) and download the latest stable version (Python 3.x) installer for your operating system (Windows or Linux).
+
+2. **Windows Users:**  
+   - Run the installer.
+   - **Make sure to check the box that says "Add Python to PATH"** before clicking "Install Now".
+   - Complete the installation.
+
+3. **Linux Users:**  
+   - Most distributions include Python 3 by default.  
+   - To install or upgrade, use your package manager. For example, on Ubuntu/Debian:  
+     ```sh
+     sudo apt update
+     sudo apt install python3 python3-venv python3-pip
+     ```
+
+4. **Verify Python Installation:**  
+   Open a new terminal or command prompt and run:
+   ```sh
+   python --version
+   ```
+   You should see a version number like `Python 3.8.x`, `3.9.x`, `3.10.x`, etc.
+
+   If you see an error or a version lower than 3.8, please check your installation and ensure Python is added to your system's PATH.
+
+---
+
 ## Getting Started
 
 ### Install
 
-Installation of Gophish is dead-simple - just download and extract the zip containing the [release for your system](https://github.com/ezops-br/gophish/releases/), and run the binary. Gophish has binary releases for Windows, Mac, and Linux platforms.
+Installation of Gophish is dead-simple - just download and extract the zip containing the [release for your system](https://github.com/ezops-br/gophish/releases/), and run the binary. Gophish has binary releases for Windows and Linux platforms.
 
 ### Building From Source
 **If you are building from source, please note that Gophish requires Go v1.10 or above!**
@@ -34,7 +68,7 @@ To build Gophish from source, simply run ```git clone https://github.com/ezops-b
 
 - Run the Gophish binary for your platform:
   - On Windows: double-click `gophish.exe` or run it from the command prompt.
-  - On Linux/macOS: run `./gophish` from the terminal.
+  - On Linux: run `./gophish` from the terminal.
 - The application will start and display log output in the terminal.
 
 ### Initial Login
