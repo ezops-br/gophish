@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -135,7 +136,13 @@ func (as *AdminServer) Start() {
 
 	basePath := filepath.Dir(exePath)
 	venvDir := filepath.Join(basePath, "Goreport", "venv")
-	venvPython := filepath.Join(venvDir, "Scripts", "python.exe")
+
+	var venvPython string
+	if runtime.GOOS == "windows" {
+		venvPython = filepath.Join(venvDir, "Scripts", "python.exe")
+	} else {
+		venvPython = filepath.Join(venvDir, "bin", "python3")
+	}
 	venvReadyMarker := filepath.Join(venvDir, ".gophish_ready")
 
 	venvNeedsSetup := false
