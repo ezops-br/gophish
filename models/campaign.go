@@ -706,8 +706,9 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 	}
 
 	campaignID := strconv.FormatInt(id, 10)
+	timestamp := strconv.FormatInt(time.Now().UnixNano(), 10)
 	tempReportDir := os.TempDir()
-	outputPath := filepath.Join(tempReportDir, "campaign_report_"+campaignID+".docx")
+	outputPath := filepath.Join(tempReportDir, fmt.Sprintf("campaign_report_%s_%s.docx", campaignID, timestamp))
 
 	if lang == "" {
 		lang = "en"

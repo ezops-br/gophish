@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	ctx "github.com/gophish/gophish/context"
 	log "github.com/gophish/gophish/logger"
@@ -212,7 +213,8 @@ func (as *Server) CampaignReport(w http.ResponseWriter, r *http.Request) {
 		if handler != nil && err == nil {
 			defer file.Close()
 			tempDir := os.TempDir()
-			tempPath := filepath.Join(tempDir, handler.Filename)
+			timestamp := strconv.FormatInt(time.Now().UnixNano(), 10)
+			tempPath := filepath.Join(tempDir, fmt.Sprintf("%s_%s", timestamp, handler.Filename))
 			out, errCreate := os.Create(tempPath)
 
 			if errCreate != nil {
