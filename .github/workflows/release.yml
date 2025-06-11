@@ -13,7 +13,7 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                os: [windows-latest]
+                os: [windows-latest, ubuntu-latest]
                 arch: ['386', amd64]
                 # We sometimes use different verbiage for things (e.g. "darwin"
                 # for the GOOS build flag and "osx" in the actual release ZIP).
@@ -23,10 +23,10 @@ jobs:
                       goos: windows
                       bin: 'gophish.exe'
                       releaseos: windows
-                    # - os: ubuntu-latest
-                    #   goos: linux
-                    #   bin: 'gophish'
-                    #   releaseos: linux
+                    - os: ubuntu-latest
+                      goos: linux
+                      bin: 'gophish'
+                      releaseos: linux
                     # - os: macos-latest
                     #   goos: darwin
                     #   bin: 'gophish'
@@ -43,10 +43,10 @@ jobs:
               uses: actions/setup-go@v2
               with:
                 go-version: 1.22
-            # - if: matrix.os == 'ubuntu-latest'
-            #   run: sudo apt-get update && sudo apt-get install -y gcc-multilib
-            # - if: matrix.arch == '386'
-            #   run: echo "RELEASE=gophish-${{ github.event.release.tag_name }}-${{ matrix.releaseos }}-32bit" >> $GITHUB_ENV
+            - if: matrix.os == 'ubuntu-latest'
+              run: sudo apt-get update && sudo apt-get install -y gcc-multilib
+            - if: matrix.arch == '386'
+              run: echo "RELEASE=gophish-${{ github.event.release.tag_name }}-${{ matrix.releaseos }}-32bit" >> $GITHUB_ENV
             - if: matrix.arch == 'amd64'
               run: echo "RELEASE=gophish-${{ github.event.release.tag_name }}-${{ matrix.releaseos }}-64bit" >> $GITHUB_ENV
             - if: matrix.os == 'windows-latest'
