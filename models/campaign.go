@@ -765,5 +765,9 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 		return nil, fmt.Errorf("failed to read generated report: %v", err)
 	}
 
+	if err := os.Remove(outputPath); err != nil {
+		log.Warnf("Failed to remove temporary report file [%s]: %v", outputPath, err)
+	}
+
 	return reportBytes, nil
 }

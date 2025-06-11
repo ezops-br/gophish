@@ -234,6 +234,12 @@ func (as *Server) CampaignReport(w http.ResponseWriter, r *http.Request) {
 
 			currentTemplateFile = tempPath
 
+			defer func() {
+				if err := os.Remove(tempPath); err != nil {
+					log.Warnf("Failed to remove temporary template file [%s]: %v", tempPath, err)
+				}
+			}()
+
 			fmt.Printf("Using uploaded templateFile: [%s]\n", currentTemplateFile)
 		} else {
 			fmt.Printf("No 'template_file' uploaded or error retrieving it (err: %v), using default: [%s]\n", err, currentTemplateFile)
