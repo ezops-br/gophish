@@ -71,7 +71,7 @@ To build Gophish from source, simply run ```git clone https://github.com/ezops-b
   - On Linux: run `./gophish` from the terminal.
     - > **Note for Linux users:** If you get a "Permission denied" error, you may need to give execute permission to the binary first:
       > ```sh
-      > chmod +x gophish
+      > chmod u+x gophish
       > ```
 - The application will start and display log output in the terminal.
 
