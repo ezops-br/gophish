@@ -143,20 +143,7 @@ func NewAdminServer(config config.AdminServer, options ...AdminServerOption) *Ad
 
 // Start launches the admin server, listening on the configured address.
 func (as *AdminServer) Start() {
-	if as.worker != nil {
-		go as.worker.Start()
-	}
-	if as.config.UseTLS {
-		// Only support TLS 1.2 and above - ref #1691, #1689
-		as.server.TLSConfig = defaultTLSConfig
-		err := util.CheckAndCreateSSL(as.config.CertPath, as.config.KeyPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Infof("Starting admin server at https://%s", as.config.ListenURL)
-		log.Fatal(as.server.ListenAndServeTLS(as.config.CertPath, as.config.KeyPath))
-	}
-
+	fmt.Println("Starting server...")
 	exePath, err := os.Executable()
 	if err != nil {
 		log.Errorf("Error getting executable path: %v", err)
@@ -266,6 +253,20 @@ func (as *AdminServer) Start() {
 		fmt.Println("Python environment setup complete!")
 	} else {
 		log.Infof("Goreport venv found at: %s. Proceeding...", venvPython)
+	}
+
+	if as.worker != nil {
+		go as.worker.Start()
+	}
+	if as.config.UseTLS {
+		// Only support TLS 1.2 and above - ref #1691, #1689
+		as.server.TLSConfig = defaultTLSConfig
+		err := util.CheckAndCreateSSL(as.config.CertPath, as.config.KeyPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Infof("Starting admin server at https://%s", as.config.ListenURL)
+		log.Fatal(as.server.ListenAndServeTLS(as.config.CertPath, as.config.KeyPath))
 	}
 
 	// If TLS isn't configured, just listen on HTTP
