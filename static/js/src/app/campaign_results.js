@@ -256,18 +256,20 @@ function generateReport() {
                 .then(function(blob) {
                     var link = document.createElement('a');
                     link.href = window.URL.createObjectURL(blob);
-                    link.download = `campaign_${campaign.id}_report_${lang}.docx`;
+                    link.download = `campaign_${campaign.id}_report_${lang}.pdf`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     resolve();
                 })
                 .catch(function(error) {
-                    Swal.fire({
-                        title: "Error",
-                        text: "An error occurred while generating the report, please try again later.",
-                        icon: "error"
-                    }).then(function() {
+                    const errorMessage = error.message || "An error occurred while generating the report, please try again later.";
+                    console.error("Error generating report:", errorMessage);
+                    Swal.fire(
+                        'Error',
+                        errorMessage,
+                        'error'
+                    ).then(function() {
                         $("#modal").modal('hide');
                     });
                     reject(error.toString());

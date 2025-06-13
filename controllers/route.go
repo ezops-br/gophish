@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"html/template"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -67,9 +68,37 @@ var defaultTLSConfig = &tls.Config{
 	},
 }
 
-func ensureGoreportConfig(basePath, host, apiKey string) error {
-	if !strings.HasPrefix(host, "http://") && !strings.HasPrefix(host, "https://") {
-		host = "http://" + host
+func getLocalIP() string {
+	addrs, err := net.InterfaceAddrs()
+
+	if err != nil {
+		return "localhost"
+	}
+
+	for _, addr := range addrs {
+		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
+			return ipnet.IP.String()
+		}
+	}
+
+	return "localhost"
+}
+
+func ensureGoreportConfig(basePath, host, apiKey string, useTLS bool) error {
+	noProtocolHost := strings.TrimPrefix(host, "http://")
+	noProtocolHost = strings.TrimPrefix(noProtocolHost, "https://")
+
+	parts := strings.SplitN(noProtocolHost, ":", 2)
+
+	if len(parts) == 2 && parts[0] == "0.0.0.0" {
+		localIP := getLocalIP()
+		noProtocolHost = localIP + ":" + parts[1]
+	}
+
+	if useTLS {
+		host = "https://" + noProtocolHost
+	} else {
+		host = "http://" + noProtocolHost
 	}
 
 	configDir := filepath.Join(basePath, "Goreport")
@@ -545,9 +574,10 @@ func (as *AdminServer) Login(w http.ResponseWriter, r *http.Request) {
 		exePath, _ := os.Executable()
 		basePath := filepath.Dir(exePath)
 		host := as.config.ListenURL
+		useTLS := as.config.UseTLS
 		apiKey := u.ApiKey
 
-		if err := ensureGoreportConfig(basePath, host, apiKey); err != nil {
+		if err := ensureGoreportConfig(basePath, host, apiKey, useTLS); err != nil {
 			log.Errorf("Failed to write Goreport config: %v", err)
 		}
 

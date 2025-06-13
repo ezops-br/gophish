@@ -254,12 +254,12 @@ func (as *Server) CampaignReport(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(map[string]string{
-				"error": "Failed to generate report: " + modelErr.Error(),
+				"error": modelErr.Error(),
 			})
 			return
 		}
 
-		w.Header().Set("Content-Disposition", "attachment; filename=campaign_report.docx")
+		w.Header().Set("Content-Disposition", "attachment; filename=campaign_report.pdf")
 		w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 		w.Write(report)
 	}

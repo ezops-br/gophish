@@ -45,6 +45,27 @@ Gophish: Open-Source Phishing Toolkit
 
 ---
 
+## LibreOffice Requirement
+
+> **Important:**  
+> To generate PDF reports, Gophish requires [LibreOffice](https://www.libreoffice.org/download/download/) to be installed on your system.
+
+### How to Install LibreOffice
+
+**Linux (Debian/Ubuntu):**
+```sh
+sudo apt update
+sudo apt install libreoffice
+```
+
+**Windows:**
+- Download and install from [https://www.libreoffice.org/download/download/](https://www.libreoffice.org/download/download/)
+- During installation, ensure the option to add LibreOffice to your system PATH is enabled, or manually add the LibreOffice `program` directory (e.g., `C:\Program Files\LibreOffice\program`) to your PATH.
+
+**After installation, you should be able to run `soffice --version` from your terminal or command prompt.**
+
+---
+
 ## Getting Started
 
 ### Install
