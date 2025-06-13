@@ -676,7 +676,7 @@ func CompleteCampaign(id int64, uid int64) error {
 	return err
 }
 
-// CampaignReport runs the Goreport Python script and returns the generated DOCX file.
+// CampaignReport runs the Goreport Python script and returns the generated PDF file.
 func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]byte, error) {
 	exePath, err := os.Executable()
 
@@ -708,7 +708,7 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 	campaignID := strconv.FormatInt(id, 10)
 	timestamp := strconv.FormatInt(time.Now().UnixNano(), 10)
 	tempReportDir := os.TempDir()
-	outputPath := filepath.Join(tempReportDir, fmt.Sprintf("campaign_report_%s_%s.docx", campaignID, timestamp))
+	outputPath := filepath.Join(tempReportDir, fmt.Sprintf("campaign_report_%s_%s.pdf", campaignID, timestamp))
 
 	if lang == "" {
 		lang = "en"
@@ -743,8 +743,8 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 		goReportScriptPath,
 		"--id", campaignID,
 		"--template", templateFile,
-		"--format", "word",
-		"--filename", strings.ReplaceAll(outputPath, ".docx", ""),
+		"--format", "pdf",
+		"--filename", strings.ReplaceAll(outputPath, ".pdf", ""),
 		"--lang", lang,
 		"--config", goReportConfigPath,
 	)
@@ -754,11 +754,16 @@ func CampaignReport(id int64, uid int64, lang string, templateFile string) ([]by
 	log.Infof("Generating combined output for command: %s", cmd.String())
 
 	output, err := cmd.CombinedOutput()
-	log.Infof("GoReport output:\n%s", string(output))
+	outputStr := string(output)
+	log.Infof("GoReport output:\n%s", outputStr)
 
 	if err != nil {
-		log.Errorf("GoReport error output:\n%s", string(output))
-		return nil, fmt.Errorf("failed to generate report: %v\n%s", err, string(output))
+		if strings.Contains(outputStr, "ERROR:LIBREOFFICE_NOT_FOUND") {
+			return nil, fmt.Errorf("LibreOffice was not found and is required. Please install LibreOffice and ensure 'soffice' is in your PATH. See the documentation for details.")
+		}
+
+		log.Errorf("GoReport error output:\n%s", outputStr)
+		return nil, fmt.Errorf("failed to generate report: %v\n%s", err, outputStr)
 	}
 
 	reportBytes, err := os.ReadFile(outputPath)
