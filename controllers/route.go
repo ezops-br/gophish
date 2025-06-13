@@ -68,20 +68,43 @@ var defaultTLSConfig = &tls.Config{
 	},
 }
 
-func getLocalIP() string {
-	addrs, err := net.InterfaceAddrs()
-
+func getLocalIP() (net.IP, error) {
+	interfaces, err := net.Interfaces()
 	if err != nil {
-		return "localhost"
+		return nil, fmt.Errorf("error getting network interfaces: %w", err)
 	}
 
-	for _, addr := range addrs {
-		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
-			return ipnet.IP.String()
+	for _, iface := range interfaces {
+		if iface.Flags&net.FlagUp == 0 {
+			continue
+		}
+		if iface.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+		addrs, err := iface.Addrs()
+		if err != nil {
+			return nil, fmt.Errorf("error getting addresses for interface %s: %w", iface.Name, err)
+		}
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+			if ip == nil || ip.IsLoopback() {
+				continue
+			}
+			ip = ip.To4()
+			if ip == nil {
+				continue
+			}
+			return ip, nil
 		}
 	}
 
-	return "localhost"
+	return nil, fmt.Errorf("no suitable IP address found")
 }
 
 func ensureGoreportConfig(basePath, host, apiKey string, useTLS bool) error {
@@ -91,8 +114,15 @@ func ensureGoreportConfig(basePath, host, apiKey string, useTLS bool) error {
 	parts := strings.SplitN(noProtocolHost, ":", 2)
 
 	if len(parts) == 2 && parts[0] == "0.0.0.0" {
-		localIP := getLocalIP()
-		noProtocolHost = localIP + ":" + parts[1]
+		localIP, err := getLocalIP()
+		var localIPStr = localIP.String()
+
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		fmt.Printf("\n\nLocal IP: %s\n\n", localIPStr)
+		noProtocolHost = localIPStr + ":" + parts[1]
 	}
 
 	if useTLS {
